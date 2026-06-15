@@ -29,6 +29,7 @@ Requires [uv](https://docs.astral.sh/uv/). Supports Claude Code, Codex, Cursor, 
 | `workflow-init` | `/dev-workflows:workflow-init` | First session in a workspace with multiple repos |
 | `workflow-continue` | `/dev-workflows:workflow-continue` | Resume an existing workspace session |
 | `workflow-add-repo` | `/dev-workflows:workflow-add-repo` | Add a new repo to an existing workspace |
+| `workflow-status` | `/dev-workflows:workflow-status` | Workspace visibility: branches, tasks, CI, uncommitted changes |
 
 ### Projects — single repos
 
@@ -48,6 +49,24 @@ Requires [uv](https://docs.astral.sh/uv/). Supports Claude Code, Codex, Cursor, 
 | `task-review` | `/dev-workflows:task-review` | Pre-PR review: correctness, security, tests, regressions |
 | `task-hotfix` | `/dev-workflows:task-hotfix` | Urgent production fix with controlled speed |
 
+### Analysis
+
+| Skill | Invoke | When to use |
+|-------|--------|-------------|
+| `change-impact` | `/dev-workflows:change-impact` | Analyze blast radius of a proposed change before planning or coding |
+
+### Pull Requests
+
+| Skill | Invoke | When to use |
+|-------|--------|-------------|
+| `pr-description` | `/dev-workflows:pr-description` | Generate structured PR description from the current diff |
+
+### Deployments
+
+| Skill | Invoke | When to use |
+|-------|--------|-------------|
+| `deploy-plan` | `/dev-workflows:deploy-plan` | Plan a deployment with ordered steps, rollback, and verification |
+
 ### Agent Generators
 
 | Skill | Invoke | When to use |
@@ -60,6 +79,7 @@ Requires [uv](https://docs.astral.sh/uv/). Supports Claude Code, Codex, Cursor, 
 | `create-cloud-agent` | `/dev-workflows:create-cloud-agent` | Need a cloud architect agent prompt |
 | `create-devops-agent` | `/dev-workflows:create-devops-agent` | Need a DevOps/SRE agent prompt |
 | `create-security-agent` | `/dev-workflows:create-security-agent` | Need a security engineer agent prompt |
+| `create-mobile-agent` | `/dev-workflows:create-mobile-agent` | Need a mobile developer agent prompt (iOS, Android, React Native, Flutter) |
 
 ---
 
@@ -92,6 +112,11 @@ workspace-init → workspace-continue (each session) → workspace-add-repo (new
 - `task-do` → implementation + updated task file with completion status
 - `task-review` → review report: verdict READY FOR PR or BLOCKED with reasons
 - `task-hotfix` → hotfix task file with root cause, fix, and blast radius
+- `workflow-status` → workspace status report printed inline or saved to `.context8/WORKSPACE_STATUS.md`
+- `change-impact` → impact analysis report printed inline
+- `pr-description` → structured PR description markdown printed inline
+- `deploy-plan` → deploy plan saved to `.context8/deploy-plans/YYYY-MM-DD_*.md`
+- `create-mobile-agent` → agent file in the native format of the current tool
 
 ---
 

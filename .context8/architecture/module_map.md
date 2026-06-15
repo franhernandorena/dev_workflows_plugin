@@ -5,7 +5,7 @@
 │                  dev-workflows                    │
 ├──────────────────────────────────────────────────┤
 │                                                  │
-│  install.py ──── reads ───── skills/<name>/     │
+|  install.py ──── reads ───── skills/<name>/     │
 │       │                       ├── SKILL.md       │
 │       │                       └── prompt.md      │
 │       │                                          │
@@ -13,7 +13,8 @@
 │       ├──→ Codex:        ~/.agents/skills/       │
 │       ├──→ Cursor:       ~/.cursor/skills/       │
 │       ├──→ Gemini CLI:   ~/.gemini/skills/       │
-│       └──→ OpenCode:     ~/.config/opencode/     │
+│       ├──→ OpenCode:     ~/.config/opencode/     │
+│       └──→ Hermes Agent: ~/.hermes/skills/       │
 │                                                  │
 ├── Plugin manifests                               │
 │   .claude-plugin/plugin.json                     │
@@ -35,7 +36,8 @@
 Workflows (multi-repo)
 ├── workflow-init
 ├── workflow-continue
-└── workflow-add-repo
+├── workflow-add-repo
+└── workflow-status
 
 Projects (single repo)
 ├── project-init
@@ -49,13 +51,23 @@ Tasks
 ├── task-review
 └── task-hotfix
 
-[Future] Agent Generators
-├── create-qa-agent
+Analysis
+└── change-impact
+
+Pull Requests
+└── pr-description
+
+Deployments
+└── deploy-plan
+
+Agent Generators
 ├── create-architect-agent
 ├── create-backend-agent
-├── create-frontend-agent
-├── create-database-agent
 ├── create-cloud-agent
+├── create-database-agent
 ├── create-devops-agent
+├── create-frontend-agent
+├── create-mobile-agent
+├── create-qa-agent
 └── create-security-agent
 ```

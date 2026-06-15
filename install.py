@@ -45,6 +45,11 @@ SKILLS = [
     ("create-cloud-agent",     "Generate a professional Cloud architect agent prompt"),
     ("create-devops-agent",    "Generate a professional DevOps/SRE agent prompt"),
     ("create-security-agent",  "Generate a professional Security engineer agent prompt"),
+    ("workflow-status",    "Multi-repo workspace visibility in one glance"),
+    ("change-impact",      "Analyze blast radius of a proposed change before coding"),
+    ("pr-description",     "Generate a structured PR description from the current diff"),
+    ("deploy-plan",        "Plan a deployment with steps, rollback, and verification"),
+    ("create-mobile-agent", "Generate a professional Mobile Developer agent prompt"),
 ]
 
 SKILL_NAMES = [s[0] for s in SKILLS]
