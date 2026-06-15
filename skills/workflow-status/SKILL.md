@@ -1,5 +1,6 @@
 ---
 name: workflow-status
+version: 1.0.0
 description: Multi-repo workspace visibility in one glance — what repos exist, current branch of each, active tasks, uncommitted changes, CI status
 ---
 

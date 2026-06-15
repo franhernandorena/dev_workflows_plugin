@@ -1,5 +1,6 @@
 ---
 name: create-cloud-agent
+version: 1.0.0
 description: Investigates the project, asks about cloud needs, and generates a professional Cloud Architect agent in the native format of the current tool
 ---
 

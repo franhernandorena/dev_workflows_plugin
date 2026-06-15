@@ -1,5 +1,6 @@
 ---
 name: create-database-agent
+version: 1.0.0
 description: Investigates the project, asks about database needs, and generates a professional Database Expert agent in the native format of the current tool
 ---
 

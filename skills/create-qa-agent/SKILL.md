@@ -1,5 +1,6 @@
 ---
 name: create-qa-agent
+version: 1.0.0
 description: Investigates the project, asks about testing needs, and generates a professional QA/Test Engineer agent in the native format of the current tool
 ---
 

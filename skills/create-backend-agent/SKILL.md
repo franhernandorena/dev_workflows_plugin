@@ -1,5 +1,6 @@
 ---
 name: create-backend-agent
+version: 1.0.0
 description: Investigates the project, asks about backend needs, and generates a professional Backend Developer agent in the native format of the current tool
 ---
 

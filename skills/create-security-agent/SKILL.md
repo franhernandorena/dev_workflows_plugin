@@ -1,5 +1,6 @@
 ---
 name: create-security-agent
+version: 1.0.0
 description: Investigates the project, asks about security needs, and generates a professional Security Engineer agent in the native format of the current tool
 ---
 

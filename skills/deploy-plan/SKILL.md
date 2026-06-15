@@ -1,5 +1,6 @@
 ---
 name: deploy-plan
+version: 1.0.0
 description: First skill in the deployments domain — plans a deployment with target environment, ordered steps, rollback plan, post-deploy verification, and communication
 ---
 

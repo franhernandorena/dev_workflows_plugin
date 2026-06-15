@@ -43,22 +43,26 @@ Projects (single repo)
 ├── project-init
 ├── project-continue
 ├── project-handoff
-└── project-audit
+├── project-audit
+└── project-review
 
 Tasks
 ├── task-plan
 ├── task-do
+├── task-continue
 ├── task-review
 └── task-hotfix
 
 Analysis
-└── change-impact
+├── change-impact
+└── dependency-audit
 
 Pull Requests
 └── pr-description
 
 Deployments
-└── deploy-plan
+├── deploy-plan
+└── release
 
 Agent Generators
 ├── create-architect-agent

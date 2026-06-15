@@ -1,5 +1,6 @@
 ---
 name: project-audit
+version: 1.0.0
 description: Use when joining a project with no .context8, stale documentation, unknown technical debt, or before starting new work on an unfamiliar codebase — produces scored assessment before any changes
 ---
 

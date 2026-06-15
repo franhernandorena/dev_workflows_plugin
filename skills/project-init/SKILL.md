@@ -1,5 +1,6 @@
 ---
 name: project-init
+version: 1.0.0
 description: Use when starting work on a new single-repo codebase for the first time — runs full exploration, builds mental model, creates .context8/ with all agent-ready context files
 ---
 

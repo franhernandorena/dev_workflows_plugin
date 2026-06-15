@@ -1,5 +1,6 @@
 ---
 name: project-continue
+version: 1.0.0
 description: Use at the start of any session on an existing project — checks git state, loads .context8 context, sets up or resumes task file, and enforces working rules before any code changes
 ---
 

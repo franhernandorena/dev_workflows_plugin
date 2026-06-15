@@ -1,5 +1,6 @@
 ---
 name: workflow-continue
+version: 1.0.0
 description: Use when resuming work on a multi-repo workspace that was previously bootstrapped — reorients across all repos, finds in-progress tasks, syncs remotes before any work
 ---
 

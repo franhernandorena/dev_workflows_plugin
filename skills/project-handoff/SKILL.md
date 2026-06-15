@@ -1,5 +1,6 @@
 ---
 name: project-handoff
+version: 1.0.0
 description: Use when closing a project session — updates all stale .context8, captures in-progress task state and git status, writes HANDOFF.md so the next agent can resume without re-reading source code
 ---
 

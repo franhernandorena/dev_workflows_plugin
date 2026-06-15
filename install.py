@@ -50,6 +50,10 @@ SKILLS = [
     ("pr-description",     "Generate a structured PR description from the current diff"),
     ("deploy-plan",        "Plan a deployment with steps, rollback, and verification"),
     ("create-mobile-agent", "Generate a professional Mobile Developer agent prompt"),
+    ("project-review",   "Full project architecture, security, and quality review"),
+    ("dependency-audit", "Auditoría de dependencias: vulnerabilidades y versiones"),
+    ("release",          "End-to-end release workflow: tag, changelog, publish"),
+    ("task-continue",    "Resume a partially completed task from the last phase"),
 ]
 
 SKILL_NAMES = [s[0] for s in SKILLS]

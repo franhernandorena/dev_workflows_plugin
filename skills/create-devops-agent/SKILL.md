@@ -1,5 +1,6 @@
 ---
 name: create-devops-agent
+version: 1.0.0
 description: Investigates the project, asks about DevOps needs, and generates a professional DevOps/SRE agent in the native format of the current tool
 ---
 

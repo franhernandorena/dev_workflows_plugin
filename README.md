@@ -38,22 +38,25 @@ Requires [uv](https://docs.astral.sh/uv/). Supports Claude Code, Codex, Cursor, 
 | `project-init` | `/dev-workflows:project-init` | First time an agent works in a repo — builds `.context8/` |
 | `project-continue` | `/dev-workflows:project-continue` | Start of every session in a documented repo |
 | `project-handoff` | `/dev-workflows:project-handoff` | End a session cleanly for the next agent |
-| `project-audit` | `/dev-workflows:project-audit` | Assess a repo with no or stale documentation |
+| `project-audit` | `/dev-workflows:project-audit` | Joining a project with no or stale documentation |
+| `project-review` | `/dev-workflows:project-review` | Full project health check before milestones |
 
 ### Tasks
 
 | Skill | Invoke | When to use |
 |-------|--------|-------------|
-| `task-plan` | `/dev-workflows:task-plan` | Complex features, cross-module changes — plan before touching code |
-| `task-do` | `/dev-workflows:task-do` | Execute a planned task step by step |
-| `task-review` | `/dev-workflows:task-review` | Pre-PR review: correctness, security, tests, regressions |
+| `task-plan` | `/dev-workflows:task-plan` | Before any complex implementation — plan phases, risks, file list |
+| `task-do` | `/dev-workflows:task-do` | Implement a planned task step by step |
+| **`task-continue`** | **`/dev-workflows:task-continue`** | **Resume a partially completed task** |
+| `task-review` | `/dev-workflows:task-review` | Pre-PR code review (correctness, security, tests) |
 | `task-hotfix` | `/dev-workflows:task-hotfix` | Urgent production fix with controlled speed |
 
 ### Analysis
 
 | Skill | Invoke | When to use |
 |-------|--------|-------------|
-| `change-impact` | `/dev-workflows:change-impact` | Analyze blast radius of a proposed change before planning or coding |
+| `change-impact` | `/dev-workflows:change-impact` | Analyze blast radius of a proposed change |
+| `dependency-audit` | `/dev-workflows:dependency-audit` | Audit deps: vulnerabilities, outdated packages, unused |
 
 ### Pull Requests
 
@@ -65,7 +68,8 @@ Requires [uv](https://docs.astral.sh/uv/). Supports Claude Code, Codex, Cursor, 
 
 | Skill | Invoke | When to use |
 |-------|--------|-------------|
-| `deploy-plan` | `/dev-workflows:deploy-plan` | Plan a deployment with ordered steps, rollback, and verification |
+| `deploy-plan` | `/dev-workflows:deploy-plan` | Plan deployment with rollback and verification |
+| `release` | `/dev-workflows:release` | End-to-end release: version bump, changelog, tag, publish |
 
 ### Agent Generators
 
@@ -85,38 +89,71 @@ Requires [uv](https://docs.astral.sh/uv/). Supports Claude Code, Codex, Cursor, 
 
 ## Typical Flow
 
+```mermaid
+graph TD
+    A[New repo] --> B[project-audit]
+    B --> C[project-init]
+    C --> D[project-continue]
+    D --> E[task-plan]
+    E --> F[task-do]
+    F -.-> G[task-continue]
+    G --> F
+    F --> H[task-review]
+    H --> I[pr-description]
+    I --> J[project-review]
+    F --> K[task-hotfix]
+    J --> L[deploy-plan]
+    L --> M[release]
+    D --> N[project-handoff]
+    
+    subgraph Scheduled
+        O[dependency-audit]
+    end
+    
+    style G stroke-dasharray: 5 5
 ```
-New repo       → project-audit  → project-init → project-continue
-                                                        ↓
-Each session   ──────────────────────────────> project-continue
-                                                        ↓
-Each task      → task-plan → task-do → task-review → task-hotfix (if prod breaks)
-                                                        ↓
-End of session → project-handoff
+
+### Simplified linear flow
+```
+project-audit → project-init → project-continue → task-plan → task-do
+       ↓                                                      ↓    ↓
+  project-review ← pr-description ← task-review ← task-hotfix     task-continue
+       ↓
+  deploy-plan → release
+```
+```
+project-handoff (end of session)
 ```
 
 For workspaces with multiple repos:
 ```
-workspace-init → workspace-continue (each session) → workspace-add-repo (new repos)
+workflow-init → workflow-continue (each session) → workflow-add-repo → workflow-status
 ```
 
 ---
 
 ## What Each Skill Produces
 
+- `workflow-init` → `.context8/WORKSPACE_OVERVIEW.md` + per-repo `.context8/WORKSPACE_LINK.md`
+- `workflow-continue` → session restored, task files or `.context8/WORKSPACE_STATUS.md` refreshed
+- `workflow-add-repo` → `.context8/WORKSPACE_LINK.md` for new repo + install/clone summary
+- `workflow-status` → workspace status report printed inline or saved to `.context8/WORKSPACE_STATUS.md`
 - `project-init` → `.context8/` with `AGENT_CONTEXT.md`, architecture docs, module map
 - `project-continue` → task file in `.context8/tasks/YYYY-MM-DD_*.md`
 - `project-handoff` → `.context8/HANDOFF_YYYY-MM-DD.md` with state, decisions, next steps
 - `project-audit` → `.context8/AUDIT_YYYY-MM-DD.md` across 7 dimensions
+- `project-review` → `.context8/reports/PROJECT_REVIEW.md` with architecture, security, deps, tests, tech debt
 - `task-plan` → task file with acceptance criteria, step-by-step plan, risk table
 - `task-do` → implementation + updated task file with completion status
+- `task-continue` → task file with resumption timestamp, phase progress updated, execution resumed from interruption point
 - `task-review` → review report: verdict READY FOR PR or BLOCKED with reasons
 - `task-hotfix` → hotfix task file with root cause, fix, and blast radius
-- `workflow-status` → workspace status report printed inline or saved to `.context8/WORKSPACE_STATUS.md`
 - `change-impact` → impact analysis report printed inline
+- `dependency-audit` → `.context8/reports/DEPENDENCY_AUDIT.md` with vulns, outdated deps, upgrade plan
 - `pr-description` → structured PR description markdown printed inline
 - `deploy-plan` → deploy plan saved to `.context8/deploy-plans/YYYY-MM-DD_*.md`
-- `create-mobile-agent` → agent file in the native format of the current tool
+- `release` → version bump, CHANGELOG.md updated, git tag, `.context8/releases/vX.Y.Z.md`
+- Generator skills (create-*) → agent file in the native format of the current tool
 
 ---
 
@@ -208,5 +245,5 @@ agents_prompts/
 - Every skill enforces phases. Do not skip phases, even for "simple" tasks.
 - Skills produce files (`.context8/`, task files, handoff summaries). Output goes to disk, not inline.
 - All documentation written in English unless explicitly overridden.
-- `project-review` blocks PR if any security issue is unresolved.
+- `project-review` blocks PR or milestone if any critical security issue is unresolved.
 - `task-hotfix` rule: if the fix requires more than 20 lines changed, pause and consider a targeted mitigation instead.

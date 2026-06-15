@@ -1,5 +1,6 @@
 ---
 name: create-architect-agent
+version: 1.0.0
 description: Investigates the project, asks about architecture needs, and generates a professional Software Architect agent in the native format of the current tool
 ---
 

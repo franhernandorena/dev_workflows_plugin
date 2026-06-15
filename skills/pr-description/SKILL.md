@@ -1,5 +1,6 @@
 ---
 name: pr-description
+version: 1.0.0
 description: After task-review, generates a structured PR description from the current diff — change summary, file list, testing done, risks, screenshot instructions
 ---
 

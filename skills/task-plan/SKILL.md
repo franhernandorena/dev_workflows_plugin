@@ -1,5 +1,6 @@
 ---
 name: task-plan
+version: 1.0.0
 description: Use before implementing any complex feature, cross-module change, or risky refactor — produces a detailed step-by-step task file with acceptance criteria, risks, and ordered implementation steps
 ---
 

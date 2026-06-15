@@ -1,5 +1,6 @@
 ---
 name: workflow-init
+version: 1.0.0
 description: Use when setting up a new multi-repo workspace for the first time — discovers child repos, creates root .context8/ and per-repo .context8/ with agent-ready context
 ---
 

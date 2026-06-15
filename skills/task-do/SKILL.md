@@ -1,5 +1,6 @@
 ---
 name: task-do
+version: 1.0.0
 description: Use to implement a task that already has a Planned task file in .context8/tasks/ — executes each step with verification, hard stops on unexpected state, and closes the task with full documentation
 ---
 

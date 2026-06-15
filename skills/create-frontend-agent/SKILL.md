@@ -1,5 +1,6 @@
 ---
 name: create-frontend-agent
+version: 1.0.0
 description: Investigates the project, asks about frontend needs, and generates a professional Frontend Developer agent in the native format of the current tool
 ---
 

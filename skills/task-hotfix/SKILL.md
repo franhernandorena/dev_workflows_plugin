@@ -1,5 +1,6 @@
 ---
 name: task-hotfix
+version: 1.0.0
 description: Use for urgent production bugs where normal planning overhead is too slow — triage, locate root cause, minimal fix, security check, verify, and ship with a fast-track PR
 ---
 

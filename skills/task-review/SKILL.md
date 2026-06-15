@@ -1,5 +1,6 @@
 ---
 name: task-review
+version: 1.0.0
 description: Use after task-do completes and before opening a PR — reviews diff for correctness, security vulnerabilities, test coverage gaps, convention violations, and regressions
 ---
 

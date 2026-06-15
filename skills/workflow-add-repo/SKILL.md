@@ -1,5 +1,6 @@
 ---
 name: workflow-add-repo
+version: 1.0.0
 description: Use when adding a new repository to an existing bootstrapped workspace — explores the new repo, creates its .context8/, and updates root workspace overview
 ---
 

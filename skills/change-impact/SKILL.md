@@ -1,5 +1,6 @@
 ---
 name: change-impact
+version: 1.0.0
 description: Before task-plan or any complex change, analyzes which modules, files, tests, and dependencies will be affected
 ---
 
