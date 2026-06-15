@@ -16,7 +16,7 @@ uv run install.py
 uv run https://raw.githubusercontent.com/fnhernandorena/agents_prompts/main/install.py
 ```
 
-Requires [uv](https://docs.astral.sh/uv/). Supports Claude Code, Codex, Cursor, Gemini CLI, and OpenCode. Installs globally (active in all projects) or locally (this project only).
+Requires [uv](https://docs.astral.sh/uv/). Supports Claude Code, Codex, Cursor, Gemini CLI, OpenCode, and **Hermes Agent**. Installs globally (active in all projects) or locally (this project only).
 
 ---
 
@@ -112,6 +112,7 @@ The installer (`install.py`) is a single Python file with no external dependenci
 | Cursor | `~/.cursor/skills/` |
 | Gemini CLI | `~/.gemini/GEMINI.md` |
 | OpenCode | `~/.config/opencode/AGENTS.md` |
+| **Hermes Agent** | **`~/.hermes/skills/dev-workflows/`** |
 
 **Project-local paths:** `.claude/skills/`, `.agents/skills/`, `.cursor/skills/`, `./GEMINI.md`, `./AGENTS.md`
 

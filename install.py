@@ -109,6 +109,17 @@ TOOLS = [
         "global_label": "~/.config/opencode/AGENTS.md",
         "project_label": "./AGENTS.md",
     },
+    {
+        "id": "hermes",
+        "name": "Hermes Agent",
+        "binaries": ["hermes"],
+        "detect": [Path.home() / ".hermes"],
+        "global_dir": Path.home() / ".hermes" / "skills" / "dev-workflows",
+        "project_subdir": Path(".hermes") / "skills" / "dev-workflows",
+        "files_per_skill": ["SKILL.md"],
+        "global_label": "~/.hermes/skills/dev-workflows/",
+        "project_label": ".hermes/skills/dev-workflows/",
+    },
 ]
 
 # ─── Source detection ─────────────────────────────────────────────────────────
@@ -380,10 +391,16 @@ def main():
         print(f"  {verb} successfully.")
 
     if not args.uninstall and not args.dry_run and not total_errors:
-        if any(t["id"] == "claude" for t in selected_tools):
-            print("\n  Claude Code skills available as:")
-            for skill in selected_skills:
-                print(f"    /dev-workflows:{skill}")
+        for t in selected_tools:
+            if t["id"] == "claude":
+                print("\n  Claude Code skills available as:")
+                for skill in selected_skills:
+                    print(f"    /dev-workflows:{skill}")
+            elif t["id"] == "hermes":
+                print("\n  Hermes Agent skills loaded. Use them by typing:")
+                for skill in selected_skills:
+                    print(f"    /skill dev-workflows:{skill}")
+                print("\n  Or launch with: hermes -s dev-workflows:workflow-init")
         print("\n  Restart your agent to load new skills.")
 
 if __name__ == "__main__":
