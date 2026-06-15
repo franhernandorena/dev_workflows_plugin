@@ -53,6 +53,9 @@ find . -path '*/.context8/tasks/*.md' | sort
 
 Read any task file whose status is "In progress" or "Blocked".
 
+**If a root-index task** (has `**Type**: Workspace (multi-repo)`): read its **Repo Tasks** table
+to see which per-repo tasks are still "Planned" or "In progress" and which are "Complete".
+
 ---
 
 ## Phase 2 — Load Context
@@ -73,9 +76,15 @@ If `.context8/` does not exist: stop and run `workflow-init` first.
 ### 3.1 Identify the active task
 - Read the most recent task file across all repos.
 - If multiple tasks are "In progress", confirm with the user which one to resume.
+- **If a root-index task**: also check each per-repo task's status.
+  - A root-index task can be "In progress" even when some per-repo tasks are "Complete"
+    and others are still "Planned". The active work is in the per-repo tasks that are
+    still "In progress" or still "Planned".
 
 ### 3.2 Check where work stopped
 - Read the **Progress Log** section of the task file.
+- **For root-index tasks**: check the **Repo Tasks** table to see which repos are done
+  and which are pending. Read the per-repo task files for any pending repos.
 - Re-read any files listed under **Files Modified** to refresh state.
 - Check if any blockers from the last session are still unresolved.
 

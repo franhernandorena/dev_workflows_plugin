@@ -77,8 +77,13 @@ If `.context8/` does not exist: stop and run `project-init` before continuing.
 ls -lt .context8/tasks/ 2>/dev/null | head -10
 ```
 - If a relevant task file exists → read it. Resume from where it left off.
+  - **If the task has a `Parent task` field**: this repo is part of a multi-repo workspace.
+    Read the parent root-index task at the path specified. Check the **Repo Tasks** table
+    for cross-repo context and dependencies.
 - If no task file exists → create one:
   `.context8/tasks/YYYY-MM-DD_short_description.md`
+  - **If a parent workspace exists** (look for `../../.context8/WORKSPACE_OVERVIEW.md`):
+    add a `**Parent task**` field linking to the workspace root-index if one exists.
 
 ### 3.2 Task file structure
 ```markdown

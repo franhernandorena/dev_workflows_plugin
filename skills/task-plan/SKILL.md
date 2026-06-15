@@ -6,7 +6,7 @@ description: Use before implementing any complex feature, cross-module change, o
 # Task Plan — Detailed Task Breakdown
 
 ## Overview
-Planning-only prompt. Loads project context, understands the task, runs targeted codebase reconnaissance, and produces a detailed `.context8/tasks/` file with ordered steps, acceptance criteria, unknowns, risks, and a test plan. No application code is written.
+Planning-only prompt. Loads project context, understands the task, runs targeted codebase reconnaissance, and produces detailed `.context8/tasks/` files with ordered steps, acceptance criteria, unknowns, risks, and a test plan. Supports single repos (one task file) and multi-repo workspaces (root-index + per-repo task files). No application code is written.
 
 ## When to use
 - Complex features spanning multiple files or modules
@@ -19,7 +19,8 @@ Planning-only prompt. Loads project context, understands the task, runs targeted
 - Hotfix needed urgently → use `task-hotfix`
 
 ## Output
-- `.context8/tasks/YYYY-MM-DD_[description].md` — complete task file with status "Planned"
+- Single repo: `.context8/tasks/YYYY-MM-DD_[description].md` — complete task file with status "Planned"
+- Workspace (multi-repo): root-index task file + per-repo task files in each child repo's `.context8/tasks/`
 
 ## Full Prompt
 
@@ -44,6 +45,17 @@ Read in this exact order. Do not skip.
    - `.context8/architecture/infrastructure.md` → if touching config, env vars, or deployment
 
 If `.context8/` does not exist: stop and run `project-init` first.
+
+### 1.1 Detect context: workspace or single repo
+```bash
+ls .context8/WORKSPACE_OVERVIEW.md 2>/dev/null && echo "WORKSPACE" || echo "SINGLE_REPO"
+```
+
+If `WORKSPACE_OVERVIEW.md` exists, the current folder is a **multi-repo workspace parent**.
+Read it now to understand the workspace structure and which repos are involved.
+
+**Workspace mode** → output will be a root-index task file + per-repo task files.
+**Single repo mode** → output is one task file (current behavior).
 
 ---
 
@@ -130,9 +142,11 @@ Produce a detailed step-by-step plan. Each step must be atomic, independently ve
 
 ## Phase 5 — Write the Task File
 
-Create the file at: `.context8/tasks/YYYY-MM-DD_short_description.md`
+Route based on context detected in Phase 1.1.
 
-Use this structure:
+### 5.1 Single repo mode
+
+Create `.context8/tasks/YYYY-MM-DD_short_description.md` with the structure below:
 
 ```markdown
 # Task: [clear, specific title]
@@ -146,12 +160,12 @@ Use this structure:
 [One paragraph: what needs to be done and why. Reuse Phase 2 answer.]
 
 ## Acceptance Criteria
-- [ ] [Concrete, observable, testable. No vague criteria like "works correctly".]
-- [ ] [Each criterion maps to at least one step in the plan.]
+- [ ] [Concrete, observable, testable.]
+- [ ] [Each criterion maps to at least one step.]
 - [ ] [Include: tests pass, no regressions, docs updated if needed.]
 
 ## Out of Scope
-- [Explicit boundaries. Prevents scope creep during implementation.]
+[Explicit boundaries. Prevents scope creep during implementation.]
 
 ## Unknowns & Risks
 | Unknown / Risk | Impact | Mitigation |
@@ -159,20 +173,16 @@ Use this structure:
 | [X] | high/med/low | [how to handle it] |
 
 ## Implementation Plan
-
 [Paste all steps from Phase 4 here, in order.]
 
 ## Dependencies
-[External: other tasks, PRs, or deploys that must complete before this one starts.]
-[Internal: none (if this is self-contained).]
+[External: other tasks, PRs, or deploys.]
+[Internal: none (if self-contained).]
 
 ## Files to Modify
 | File | Change type | Notes |
 |------|-------------|-------|
 | `path/to/file.py` | modify / create / delete | [what changes] |
-
-## Files to Read (before starting)
-- `path/to/file.py` — [why it must be read]
 
 ## Test Plan
 - [ ] Run existing tests before starting (baseline).
@@ -192,10 +202,107 @@ Use this structure:
 
 ---
 
+### 5.2 Workspace mode (multi-repo)
+
+Create root-index + per-repo task files.
+
+#### 5.2.1 Root-index task file
+
+`.context8/tasks/YYYY-MM-DD_short_description.md`
+
+```markdown
+# Task: [clear, specific title]
+
+**Date**: YYYY-MM-DD
+**Status**: Planned
+**Type**: Workspace (multi-repo)
+
+## Objective
+[What needs to be done and why. Reuse Phase 2 answer.]
+
+## Acceptance Criteria
+- [ ] [Cross-repo criteria — behaviors that span repos]
+- [ ] [Per-repo criteria, grouped by repo]
+
+## Repo Tasks
+
+| Repo | Task File | Status | Description |
+|------|-----------|--------|-------------|
+| `frontend/` | `../../frontend/.context8/tasks/YYYY-MM-DD_frontend.md` | Planned | [one-liner] |
+| `backend/` | `../../backend/.context8/tasks/YYYY-MM-DD_backend.md` | Planned | [one-liner] |
+
+## Cross-repo Dependencies
+[Ordering constraints between repos. E.g., "Backend API first, then frontend consumes it."]
+
+## Unknowns & Risks
+| Unknown / Risk | Impact | Mitigation |
+|----------------|--------|------------|
+| [X] | high/med/low | [how to handle it] |
+
+## Decisions Made
+(filled in during implementation)
+
+## Blockers
+(filled in during implementation)
+```
+
+#### 5.2.2 Per-repo task files
+
+For each repo with work, create `[repo]/.context8/tasks/YYYY-MM-DD_[repo]_description.md`:
+
+```markdown
+# Task: [repo name] — [clear, specific title]
+
+**Date**: YYYY-MM-DD
+**Status**: Planned
+**Parent task**: `../../.context8/tasks/YYYY-MM-DD_short_description.md`
+**Branch**: [branch name — create if needed: type/short-description]
+
+## Objective
+[What this specific repo needs to do. Scoped to this repo only.]
+
+## Acceptance Criteria
+- [ ] [Concrete, observable, testable.]
+- [ ] [Each criterion maps to at least one step.]
+- [ ] [Tests pass, no regressions, docs updated.]
+
+## Out of Scope
+[Work that belongs to sibling repos — be explicit about boundaries.]
+
+## Implementation Plan
+[Steps specific to this repo from Phase 4, in order.]
+
+## Dependencies
+[Cross-repo: what must be completed in other repos first.]
+[Internal: none (if self-contained within this repo).]
+
+## Files to Modify
+| File | Change type | Notes |
+|------|-------------|-------|
+| `path/to/file.py` | modify / create / delete | [what changes] |
+
+## Test Plan
+- [ ] Run existing tests before starting (baseline).
+- [ ] [Specific tests that cover the change.]
+- [ ] [New tests to write and where.]
+- [ ] Run full test suite after all steps complete.
+
+## Progress Log
+(filled in during implementation)
+
+## Decisions Made
+(filled in during implementation)
+
+## Blockers
+(filled in during implementation)
+```
+---
+
 ## Phase 6 — Validate the Plan
 
 Before handing off this plan for implementation, verify:
 
+### Single repo checks
 - [ ] Every acceptance criterion maps to at least one step.
 - [ ] Every step has a "how to verify" check.
 - [ ] Steps are ordered correctly (no step depends on a later step).
@@ -204,6 +311,15 @@ Before handing off this plan for implementation, verify:
 - [ ] No implementation has started (this is planning only).
 - [ ] The branch name follows the project's naming convention.
 - [ ] If the task is XL: consider splitting into multiple task files with explicit handoff points.
+
+### Workspace (multi-repo) checks
+- [ ] Root-index task has all child repos listed in **Repo Tasks** table.
+- [ ] Each child repo with work has its own per-repo task file in that repo's `.context8/tasks/`.
+- [ ] Per-repo task files have a **Parent task** field linking back to the root index.
+- [ ] Cross-repo dependencies are documented in the root-index task.
+- [ ] Each per-repo task is scoped only to that repo (no cross-contamination of steps).
+- [ ] Out of Scope section in each per-repo task explicitly excludes sibling repo work.
+- [ ] Acceptance criteria in the root-index cover cross-repo behaviors.
 
 ---
 

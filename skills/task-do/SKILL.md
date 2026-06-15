@@ -50,6 +50,16 @@ Read in this order:
 Update the task file: `**Status**: In progress`
 Add a progress log entry: `- [HH:MM] Started execution. Branch: [branch name].`
 
+### 1.4 Detect if this is a workspace root-index task
+```bash
+ls .context8/WORKSPACE_OVERVIEW.md 2>/dev/null && grep -q "Workspace (multi-repo)" .context8/tasks/*.md 2>/dev/null && echo "WORKSPACE_INDEX" || echo "SINGLE_REPO"
+```
+
+If the task has `**Type**: Workspace (multi-repo)`, this is a **root-index task**.
+Read the **Repo Tasks** table and **Cross-repo Dependencies** sections.
+- Root-index task → skip Phase 2, go to **Phase 3A — Workspace execution mode**.
+- Single repo task → proceed to Phase 2 as normal.
+
 ---
 
 ## Phase 2 — Branch Setup
@@ -103,6 +113,63 @@ When a hard stop occurs: write it under **Blockers** in the task file, then surf
 
 ---
 
+## Phase 3A — Workspace Execution Mode (root-index task)
+
+If Phase 1.4 detected a root-index task, use this phase instead of Phase 3.
+
+### 3A.1 Understand the cross-repo plan
+- Read the **Repo Tasks** table — each row is one repo with a link to its per-repo task.
+- Read **Cross-repo Dependencies** — this defines the execution order.
+
+### 3A.2 Execute per-repo tasks in dependency order
+
+For each repo listed as "Planned", in dependency order:
+
+**Option A — Delegate to sub-agent** (preferred for isolated repos):
+```bash
+# Navigate to the repo first to verify its state
+cd [repo-path]
+git status
+git log --oneline -3
+cd ..
+```
+Then use `delegate_task` to spawn a sub-agent for that repo:
+- **Goal**: "Implement the changes specified in `<per-repo-task-file>` for `<repo-name>`."
+- **Context**: Include the per-repo task file content, the repo's `.context8/AGENT_CONTEXT.md`, and the parent workspace overview.
+- The sub-agent works independently in that repo: reads, implements, tests, commits.
+- After the sub-agent returns: verify by checking git log and running tests in that repo.
+
+**Option B — Manual execution**:
+- Navigate into the repo: `cd [repo-path]`
+- Read the per-repo task file and the repo's AGENT_CONTEXT.md.
+- Implement each step from the per-repo task (same as Phase 3).
+- Verify tests pass in that repo.
+- Commit changes.
+- Return to workspace root: `cd [workspace-root]`
+
+### 3A.3 Update root-index after each repo
+
+After completing work in a repo (whether delegated or manual):
+
+1. Update the root-index task file:
+   - Mark that repo's row: change status from "Planned" to "Complete".
+   - Add a log entry to the **Progress Log** section:
+     `- [HH:MM] <repo>: All steps complete. Tests pass.`
+2. Commit the root-index update:
+   ```bash
+   git add .context8/tasks/[task-file].md
+   git commit -m "docs(tasks): mark <repo> complete in root-index"
+   ```
+
+### 3A.4 Finalize root-index
+
+When all repos are complete:
+- Set root-index task status to "Complete".
+- Add final progress log entry.
+- Proceed to Phase 4 for cross-repo post-checks.
+
+---
+
 ## Phase 4 — Post-Implementation Checks
 
 After all steps are complete:
@@ -145,6 +212,14 @@ If a criterion cannot be checked off, do NOT mark the task complete.
 ## Progress Log
 - [HH:MM] All steps complete. Tests pass. Linting clean.
 ```
+
+**If this is a per-repo task** (has a **Parent task** field): also update the parent root-index task.
+- Navigate to the workspace root.
+- Open the parent root-index task file.
+- Mark this repo's status as "Complete" in the **Repo Tasks** table.
+- If all repos are complete, set root-index status to "Complete".
+- Commit: `docs(tasks): mark <repo> complete in root-index`
+- Return to this repo.
 
 ### 5.2 Update .context8/ if architecture changed
 - Data flow changed → update `.context8/architecture/data_flow.md`
