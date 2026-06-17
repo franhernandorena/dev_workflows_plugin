@@ -38,8 +38,11 @@ Use this to catch issues before review from humans. Covers correctness, security
 ### 1.1 Identify what changed
 ```bash
 git diff main...HEAD --stat
+DIFF_STAT=$(git diff main...HEAD --stat)
 git diff main...HEAD
 ```
+
+Note: total files changed, lines added, lines removed — these go in the report.
 
 ### 1.2 Read the task file
 Find and read the task file for this work:
@@ -52,7 +55,26 @@ Verify:
 - All acceptance criteria are checked off.
 - All modified files are listed.
 
-### 1.3 Load relevant context
+### 1.3 Scope creep check
+
+Compare files actually changed (from `git diff main...HEAD --stat`) against the **Files to Modify** section in the task file:
+
+- **Files changed NOT in the task** → possible scope creep. Log them. If they are justified (e.g. refactoring needed to implement the task cleanly), note the justification. If not, flag as a finding.
+- **Files in the task NOT changed** → possible incomplete implementation. Flag as a finding.
+
+### 1.4 Workspace awareness
+
+Check if this repo is part of a multi-repo workspace:
+```bash
+ls ../../.context8/WORKSPACE_OVERVIEW.md 2>/dev/null && echo "WORKSPACE_CHILD" || echo "SINGLE_REPO"
+```
+
+If `WORKSPACE_CHILD`:
+- Read `.context8/WORKSPACE_LINK.md` (if exists) to understand sibling repo boundaries.
+- Verify that no changes cross into sibling repos (all changed files should be within this repo).
+- If any file in the diff belongs to a sibling repo, flag as **scope creep across workspace boundaries**.
+
+### 1.5 Load relevant context
 - `.context8/AGENT_CONTEXT.md` — conventions, patterns, gotchas.
 - Every file modified in this diff (read fully, not just the diff).
 
@@ -140,14 +162,27 @@ Also manually verify:
 
 ## Phase 7 — Review Report
 
-Produce a structured report before opening the PR:
+Produce a structured report. **Save it to disk** AND show it inline:
+
+```bash
+mkdir -p .context8/reviews/
+REVIEW_DATE=$(date +%Y-%m-%d)
+```
+
+Write `.context8/reviews/${REVIEW_DATE}_<task-description>_review.md` with the template below, then print it inline.
 
 ```markdown
 ## Review Report — [task title]
 
 **Date**: YYYY-MM-DD
 **Branch**: [branch]
-**Files changed**: N
+**Diff**: N files changed, X insertions(+), Y deletions(-)
+
+### Scope Creep
+- Files changed outside task scope: [list or "none"]
+- Files expected but missing: [list or "none"]
+- Workspace boundary crossings: [list or "none"]
+- Justification for out-of-scope changes: [notes]
 
 ### Correctness
 - [ ] Logic matches acceptance criteria
@@ -176,6 +211,9 @@ Produce a structured report before opening the PR:
 - [ ] Full test suite passes
 - [ ] Callers checked
 - Issues found: [list or "none"]
+
+### Questions
+[Open questions about unclear logic, design decisions, or anything that needs clarification from the team or task author. "None" if nothing.]
 
 ### Verdict
 READY FOR PR / BLOCKED: [reason]
