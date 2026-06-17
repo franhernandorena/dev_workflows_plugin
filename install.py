@@ -3,6 +3,7 @@
 # requires-python = ">=3.11"
 # dependencies = ["questionary"]
 # ///
+
 """
 Dev Workflows Installer
 Run with: uv run install.py [--uninstall] [--dry-run]
@@ -26,37 +27,42 @@ BRANCH = "main"
 RAW_BASE = f"https://raw.githubusercontent.com/{REPO}/{BRANCH}"
 
 SKILLS = [
-    ("workflow-init",     "Bootstrap a new multi-repo workspace"),
-    ("workflow-continue", "Resume an existing workspace session"),
-    ("workflow-add-repo", "Add a new repo to an existing workspace"),
-    ("project-init",      "Bootstrap a new single-repo project"),
-    ("project-continue",  "Start a session on an existing project"),
-    ("project-handoff",   "Close a session cleanly for the next agent"),
-    ("project-audit",     "Assess a project with no or stale documentation"),
-    ("task-plan",         "Produce a detailed implementation plan"),
-    ("task-do",           "Execute a planned task step by step"),
-    ("task-review",       "Pre-PR code review (correctness, security, tests)"),
-    ("task-hotfix",       "Urgent production fix with controlled speed"),
-    ("create-qa-agent",       "Generate a professional QA/Test engineer agent prompt"),
-    ("create-architect-agent", "Generate a professional Software Architect agent prompt"),
-    ("create-backend-agent",   "Generate a professional Backend developer agent prompt"),
-    ("create-frontend-agent",  "Generate a professional Frontend developer agent prompt"),
-    ("create-database-agent",  "Generate a professional Database expert agent prompt"),
-    ("create-cloud-agent",     "Generate a professional Cloud architect agent prompt"),
-    ("create-devops-agent",    "Generate a professional DevOps/SRE agent prompt"),
-    ("create-security-agent",  "Generate a professional Security engineer agent prompt"),
-    ("workflow-status",    "Multi-repo workspace visibility in one glance"),
-    ("change-impact",      "Analyze blast radius of a proposed change before coding"),
-    ("pr-description",     "Generate a structured PR description from the current diff"),
-    ("deploy-plan",        "Plan a deployment with steps, rollback, and verification"),
-    ("create-mobile-agent", "Generate a professional Mobile Developer agent prompt"),
-    ("project-review",   "Full project architecture, security, and quality review"),
-    ("dependency-audit", "Auditoría de dependencias: vulnerabilidades y versiones"),
-    ("release",          "End-to-end release workflow: tag, changelog, publish"),
-    ("task-continue",    "Resume a partially completed task from the last phase"),
+    # (name, description, category)
+    # Category defaults to "dev-workflows" for all existing skills; document and other
+    # categories set explicitly so the installer routes to the right Hermes subdirectory.
+    ("workflow-init",     "Bootstrap a new multi-repo workspace",                    "dev-workflows"),
+    ("workflow-continue", "Resume an existing workspace session",                    "dev-workflows"),
+    ("workflow-add-repo", "Add a new repo to an existing workspace",                 "dev-workflows"),
+    ("project-init",      "Bootstrap a new single-repo project",                     "dev-workflows"),
+    ("project-continue",  "Start a session on an existing project",                  "dev-workflows"),
+    ("project-handoff",   "Close a session cleanly for the next agent",              "dev-workflows"),
+    ("project-audit",     "Assess a project with no or stale documentation",         "dev-workflows"),
+    ("task-plan",         "Produce a detailed implementation plan",                  "dev-workflows"),
+    ("task-do",           "Execute a planned task step by step",                     "dev-workflows"),
+    ("task-review",       "Pre-PR code review (correctness, security, tests)",       "dev-workflows"),
+    ("task-hotfix",       "Urgent production fix with controlled speed",             "dev-workflows"),
+    ("create-qa-agent",       "Generate a professional QA/Test engineer agent prompt",       "dev-workflows"),
+    ("create-architect-agent", "Generate a professional Software Architect agent prompt",     "dev-workflows"),
+    ("create-backend-agent",   "Generate a professional Backend developer agent prompt",       "dev-workflows"),
+    ("create-frontend-agent",  "Generate a professional Frontend developer agent prompt",      "dev-workflows"),
+    ("create-database-agent",  "Generate a professional Database expert agent prompt",         "dev-workflows"),
+    ("create-cloud-agent",     "Generate a professional Cloud architect agent prompt",         "dev-workflows"),
+    ("create-devops-agent",    "Generate a professional DevOps/SRE agent prompt",              "dev-workflows"),
+    ("create-security-agent",  "Generate a professional Security engineer agent prompt",       "dev-workflows"),
+    ("workflow-status",    "Multi-repo workspace visibility in one glance",          "dev-workflows"),
+    ("change-impact",      "Analyze blast radius of a proposed change before coding", "dev-workflows"),
+    ("pr-description",     "Generate a structured PR description from the current diff", "dev-workflows"),
+    ("deploy-plan",        "Plan a deployment with steps, rollback, and verification", "dev-workflows"),
+    ("create-mobile-agent", "Generate a professional Mobile Developer agent prompt",  "dev-workflows"),
+    ("project-review",   "Full project architecture, security, and quality review",          "dev-workflows"),
+    ("dependency-audit", "Auditoría de dependencias: vulnerabilidades y versiones",          "dev-workflows"),
+    ("release",          "End-to-end release workflow: tag, changelog, publish",              "dev-workflows"),
+    ("task-continue",    "Resume a partially completed task from the last phase",             "dev-workflows"),
+    ("make-report",      "Generate structured markdown reports optimized for ClickUp Docs (tables, diagrams, formatting)", "document"),
 ]
 
 SKILL_NAMES = [s[0] for s in SKILLS]
+SKILL_CATEGORIES = {s[0]: s[2] for s in SKILLS}
 
 TOOLS = [
     {
@@ -123,11 +129,11 @@ TOOLS = [
         "name": "Hermes Agent",
         "binaries": ["hermes"],
         "detect": [Path.home() / ".hermes"],
-        "global_dir": Path.home() / ".hermes" / "skills" / "dev-workflows",
-        "project_subdir": Path(".hermes") / "skills" / "dev-workflows",
+        "global_dir": Path.home() / ".hermes" / "skills",
+        "project_subdir": Path(".hermes") / "skills",
         "files_per_skill": ["SKILL.md"],
-        "global_label": "~/.hermes/skills/dev-workflows/",
-        "project_label": ".hermes/skills/dev-workflows/",
+        "global_label": "~/.hermes/skills/",
+        "project_label": ".hermes/skills/",
     },
 ]
 
@@ -200,6 +206,33 @@ def write_file(dest: Path, content: str, dry: bool) -> str:
             dest.write_text(content, encoding="utf-8")
         return "created"
 
+def install_skill_for_tool(tool: dict, skill: str, base: Path, dry: bool) -> tuple[int, int, list[str]]:
+    """Install one skill for one tool. Returns (created, updated, errors)."""
+    created = updated = 0
+    errors = []
+
+    try:
+        files = get_skill_files(skill)
+    except Exception as e:
+        return 0, 0, [f"{skill}: {e}"]
+
+    category = SKILL_CATEGORIES.get(skill, "dev-workflows")
+
+    for fname, content in files.items():
+        if tool["id"] == "hermes":
+            # Hermes uses category subdirectories: skills/<category>/<name>/SKILL.md
+            dest = base / category / skill / fname
+        else:
+            # All other agents use flat structure: skills/<name>/SKILL.md
+            dest = base / skill / fname
+        status = write_file(dest, content, dry)
+        if status == "created":
+            created += 1
+        else:
+            updated += 1
+
+    return created, updated, errors
+
 def install_tool(tool: dict, skills: list[str], base: Path, dry: bool) -> tuple[int, int, list[str]]:
     """Install skills + context file for one tool. Returns (created, updated, errors)."""
     created = updated = 0
@@ -207,15 +240,10 @@ def install_tool(tool: dict, skills: list[str], base: Path, dry: bool) -> tuple[
 
     if tool.get("files_per_skill") and skills:
         for skill in skills:
-            try:
-                files = get_skill_files(skill)
-            except Exception as e:
-                errors.append(f"{skill}: {e}")
-                continue
-            for fname, content in files.items():
-                status = write_file(base / skill / fname, content, dry)
-                if status == "created": created += 1
-                else: updated += 1
+            c, u, e = install_skill_for_tool(tool, skill, base, dry)
+            created += c
+            updated += u
+            errors.extend(e)
 
     if not tool.get("files_per_skill"):
         ctx = tool.get("context_file", "CLAUDE.md")
@@ -236,7 +264,11 @@ def uninstall_tool(tool: dict, skills: list[str], base: Path, dry: bool) -> tupl
 
     if tool.get("files_per_skill") and skills:
         for skill in skills:
-            skill_dir = base / skill
+            category = SKILL_CATEGORIES.get(skill, "dev-workflows")
+            if tool["id"] == "hermes":
+                skill_dir = base / category / skill
+            else:
+                skill_dir = base / skill
             if skill_dir.exists():
                 if not dry:
                     shutil.rmtree(skill_dir)
@@ -333,7 +365,7 @@ def main():
     if skill_tools:
         skill_choices = [
             Choice(title=f"{name}  —  {desc}", value=name, checked=True)
-            for name, desc in SKILLS
+            for name, desc, _cat in SKILLS
         ]
         selected_skills = questionary.checkbox(
             "Select skills to install:", choices=skill_choices
@@ -404,12 +436,13 @@ def main():
             if t["id"] == "claude":
                 print("\n  Claude Code skills available as:")
                 for skill in selected_skills:
-                    print(f"    /dev-workflows:{skill}")
+                    cat = SKILL_CATEGORIES.get(skill, "dev-workflows")
+                    print(f"    /{cat}:{skill}")
             elif t["id"] == "hermes":
                 print("\n  Hermes Agent skills loaded. Use them by typing:")
                 for skill in selected_skills:
-                    print(f"    /skill dev-workflows:{skill}")
-                print("\n  Or launch with: hermes -s dev-workflows:workflow-init")
+                    cat = SKILL_CATEGORIES.get(skill, "dev-workflows")
+                    print(f"    /skill {cat}:{skill}")
         print("\n  Restart your agent to load new skills.")
 
 if __name__ == "__main__":
