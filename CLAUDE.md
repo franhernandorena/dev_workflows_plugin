@@ -24,6 +24,9 @@ Structured prompts for every stage of development work with an AI agent.
 - `dev-workflows:task-review` — pre-PR code review (correctness, security, tests)
 - `dev-workflows:task-hotfix` — urgent production fix with controlled speed
 
+### Repository Maintenance
+- `dev-workflows:repo-cleanup` — revisa ramas git, limpia automáticamente las propias mergeadas y pide permiso antes de tocar ajenas
+
 ### Documents
 - `document:make-report` — generate structured markdown reports optimized for ClickUp Docs with proper tables, diagrams, and formatting
 
