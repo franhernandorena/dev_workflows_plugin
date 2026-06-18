@@ -56,6 +56,8 @@ done
 
 Si existe `.context8/REPO_BRANCHES.md`, verificar que las ramas actuales coinciden con lo documentado. Si hay diferencias (ramas nuevas, ramas mergeadas ya eliminadas), actualizar el archivo.
 
+También verificar `.context8/PIPELINES.md`: si existe, revisar que los workflows listados siguen existiendo y que los triggers externos siguen siendo válidos. Si no existe, notificar al usuario que conviene crearlo vía `project-init`.
+
 ### 1.3 Verify you are on the right branch
 ```bash
 git branch --show-current

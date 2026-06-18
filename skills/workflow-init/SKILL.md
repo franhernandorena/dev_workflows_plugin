@@ -200,7 +200,8 @@ Inside the child repo, create:
 ├── AGENT_SYSTEM_PROMPT.md        # System prompt for new agent instantiation
 ├── PROJECT_OVERVIEW.md           # 1-page high-level summary
 ├── REPO_BRANCHES.md              # Branches, tags, git conventions
-├── WORKSPACE_LINK.md             # Reference to sibling repos (Phase 3.7)
+├── PIPELINES.md                  # CI/CD pipelines, triggers, entornos
+├── WORKSPACE_LINK.md             # Reference to sibling repos (Phase 3.8)
 ├── architecture/
 │   ├── data_flow.md
 │   ├── key_patterns.md
@@ -282,9 +283,9 @@ Ready-to-paste system prompt:
 
 **architecture/infrastructure.md**: Cloud services, env vars (name + purpose + example, no real secrets), container setup, how to run locally, how to deploy.
 
-### 3.7 Create REPO_BRANCHES.md (per repo)
+### 3.7 Create repo-branches.md (per repo)
 
-For each child repo, create `.context8/REPO_BRANCHES.md`:
+For each child repo, create `.context8/repo-branches.md`:
 
 ```bash
 # Gather data
@@ -306,7 +307,7 @@ for tag in $(git tag --sort=-creatordate | head -10); do
 done
 ```
 
-Write `<repo>/.context8/REPO_BRANCHES.md`:
+Write `<repo>/.context8/repo-branches.md`:
 
 ```markdown
 # Repo Branches — [repo name]
@@ -324,12 +325,104 @@ Write `<repo>/.context8/REPO_BRANCHES.md`:
 | `feat/xxx` | YYYY-MM-DD | [commit message] | active |
 
 ## Tags
-| Tag | Date | Description |
-|-----|------|-------------|
-| v1.0.0 | YYYY-MM-DD | [tag message] |
+| Tag | Date | Type | Description | Trigger |
+|-----|------|------|-------------|---------|
+| v1.0.0 | YYYY-MM-DD | release | [summary] | Deploys production |
+| v1.0.0-rc1 | YYYY-MM-DD | release-candidate | RC para QA | Deploys preprod |
+
+### Tag naming convention
+- `v<major>.<minor>.<patch>` — release estable
+- `<version>-rc<N>` — release candidate
+- `<version>-hotfix.<desc>` — hotfix
+- `<any>-alpha.<N>` / `<any>-beta.<N>` — pre-release
+
+### Tag triggers
+- Tag `v*` → normalmente despliega a producción.
+- Tag `*-rc*` → normalmente despliega a preprod.
+- Crear: `git tag -a vX.Y.Z -m "mensaje" && git push origin vX.Y.Z`
 ```
 
-### 3.8 Create WORKSPACE_LINK.md (per repo)
+### 3.8 Create PIPELINES.md (per repo)
+
+For each child repo, create `.context8/PIPELINES.md`:
+
+```bash
+# Detect CI/CD files
+echo "=== GitHub Actions ==="
+ls .github/workflows/ 2>/dev/null || echo "(none)"
+
+echo ""
+echo "=== Cloud Build ==="
+ls cloudbuild*yaml cloudbuild*/ 2>/dev/null || echo "(none)"
+```
+
+For each GitHub Actions workflow, detect trigger events:
+
+```bash
+for file in .github/workflows/*.yml .github/workflows/*.yaml 2>/dev/null; do
+  echo "=== $file ==="
+  sed -n '/^on:/,/^jobs:/p' "$file"
+  echo ""
+done
+```
+
+Write `<repo>/.context8/PIPELINES.md`:
+
+```markdown
+# Pipelines — [repo name]
+
+## Triggers overview
+
+| Pipeline | Trigger | Action | Target | Source config |
+|----------|---------|--------|--------|---------------|
+| Tests | PR to develop | test + lint | CI | `.github/workflows/test.yml` |
+| Deploy pre | push to main | build + deploy | preprod | `.github/workflows/deploy-pre.yml` |
+| Deploy prod | tag v* | build + deploy | production | `cloudbuild.yaml` |
+
+## GitHub Actions
+
+| Workflow | Triggers | Description |
+|----------|----------|-------------|
+| test.yml | PR a develop | Tests + lint |
+| deploy-pre.yml | push a main | Build + deploy preprod |
+
+## Cloud Build
+
+| Trigger | Event | Target | Config |
+|---------|-------|--------|--------|
+| deploy-prod | tag v* | Cloud Run prod | `cloudbuild.yaml` |
+
+## External triggers
+
+Triggers existentes en el entorno cloud pero SIN archivo en el repo:
+
+| Trigger | Source | Action | Environment | Config location |
+|---------|--------|--------|-------------|-----------------|
+| [name] | [event] | [action] | [env] | GCP Console / GH UI |
+
+> **Nota**: Actualizar esta sección cuando se creen/modifiquen triggers externos.
+
+## Environments
+
+| Environment | URL | Deploy trigger | Approvals |
+|-------------|-----|---------------|-----------|
+| Development | localhost | — | — |
+| Preproduction | pre.example.com | push a main | automático |
+| Production | example.com | tag v* | manual |
+
+## Manual deploy
+
+```bash
+# Preprod
+git push origin main
+
+# Production
+git tag -a v1.2.3 -m "release: message"
+git push origin v1.2.3
+```
+```
+
+### 3.9 Create WORKSPACE_LINK.md (per repo)
 
 Inside each child repo's `.context8/`, create `WORKSPACE_LINK.md`:
 
@@ -354,7 +447,7 @@ This repo is part of **workspace [name]**.
 - For cross-repo changes, work from the workspace root using `workflow-continue`.
 ```
 
-### 3.8 Update repo README.md
+### 3.10 Update repo README.md
 
 Add or update:
 ```markdown
@@ -384,6 +477,7 @@ After all child repos are bootstrapped, update the root `.context8/README.md`:
 - [ ] AGENT_CONTEXT.md for each repo has all sections (no placeholder text)
 - [ ] AGENT_SYSTEM_PROMPT.md for each repo is ready to paste
 - [ ] REPO_BRANCHES.md created per repo with branches and tags listed
+- [ ] PIPELINES.md created per repo with CI/CD triggers and external triggers documented
 - [ ] Each repo's README.md references its `.context8/` and the root `.context8/`
 - [ ] Root README.md (or WORKSPACE_OVERVIEW.md) links all repos
 - [ ] All documentation written in English

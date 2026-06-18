@@ -44,15 +44,17 @@ with a project root — they serve different purposes.
 find . -maxdepth 2 -name ".git" -type d | sed 's|/.git||' | sort
 ```
 
-### 1.2 Check git status in every child repo
+### 1.2 Check git status + PIPELINES.md in every child repo
 ```bash
-for repo in $(find . -maxdepth 2 -name ".git" -type d | sed 's|/.git||'); do
+for repo in $(find . -maxdepth 2 -name ".git" -type d | sed 's|/.git||' | sort); do
   echo "=== $repo ==="
   git -C "$repo" fetch --prune 2>&1 | grep -v "^$"
   git -C "$repo" status --short
   git -C "$repo" log --oneline -5
   echo "  Branches:"
   git -C "$repo" branch -a | head -10
+  echo "  CI/CD:"
+  ls "$repo/.context8/PIPELINES.md" 2>/dev/null || echo "  (sin PIPELINES.md)"
   echo ""
 done
 ```
@@ -116,6 +118,7 @@ Before writing or modifying any code:
 - [ ] I know which workspace and which repos are in scope.
 - [ ] I have read WORKSPACE_OVERVIEW.md and the relevant AGENT_CONTEXT.md files.
 - [ ] I know which branch I'm on in each repo and it's correct.
+- [ ] REPO_BRANCHES.md and PIPELINES.md are up to date in each repo I'll touch.
 - [ ] I have read the active task file and know exactly where work stopped.
 - [ ] I understand cross-repo dependencies that affect this task.
 - [ ] No unresolved blockers are hidden or skipped.

@@ -139,6 +139,7 @@ Create the following structure. Every file is mandatory.
 ├── AGENT_SYSTEM_PROMPT.md        # System prompt for new agent instantiation
 ├── PROJECT_OVERVIEW.md           # 1-page high-level summary
 ├── REPO_BRANCHES.md              # Branches, tags, git conventions (shared con repo-cleanup)
+├── PIPELINES.md                  # CI/CD pipelines, triggers, entornos (shared con skill ci/cd)
 ├── architecture/
 │   ├── data_flow.md              # End-to-end data / request flow
 │   ├── key_patterns.md           # Design patterns, conventions, anti-patterns
@@ -214,7 +215,7 @@ Write a ready-to-paste system prompt that:
 ### .context8/PROJECT_OVERVIEW.md
 1-page summary: what the project does, who uses it, key architectural decisions, current state, next priorities.
 
-### .context8/REPO_BRANCHES.md
+### .context8/repo-branches.md
 Create the branch reference file. Run these commands to gather data:
 
 ```bash
@@ -249,7 +250,7 @@ for tag in $(git tag --sort=-creatordate | head -10); do
 done
 ```
 
-Use the output to write `.context8/REPO_BRANCHES.md`:
+Use the output to write `.context8/repo-branches.md`:
 
 ```markdown
 # Repo Branches — [project name]
@@ -271,9 +272,113 @@ Use the output to write `.context8/REPO_BRANCHES.md`:
 | `feat/xxx` | YYYY-MM-DD | [inferred from commit messages] | stale / active / merged |
 
 ## Tags
-| Tag | Date | Description |
-|-----|------|-------------|
-| v1.0.0 | YYYY-MM-DD | [from tag message] |
+| Tag | Date | Type | Description | Trigger |
+|-----|------|------|-------------|---------|
+| v1.0.0 | YYYY-MM-DD | release | v1.0.0 — [summary] | Deploys production |
+| v1.0.0-rc1 | YYYY-MM-DD | release-candidate | RC para QA | Deploys preprod |
+| v0.9.0 | YYYY-MM-DD | release | [summary] | Deploys production |
+
+### Tag naming convention
+- `v<major>.<minor>.<patch>` — release estable a producción
+- `v<major>.<minor>.<patch>-rc<N>` — release candidate para QA/preprod
+- `v<major>.<minor>.<patch>-hotfix.<desc>` — hotfix a producción
+- `<any>-alpha.<N>` / `<any>-beta.<N>` — pre-release tests
+
+### Tag triggers
+- Crear un tag `v*` normalmente dispara un deploy a producción vía Cloud Build / GitHub Actions.
+- Crear un tag `*-rc*` normalmente dispara un deploy a preprod.
+- Los tags se crean con `git tag -a vX.Y.Z -m "mensaje" && git push origin vX.Y.Z`.
+```
+
+### .context8/PIPELINES.md
+
+Create the CI/CD reference file. Run these commands to gather data:
+
+```bash
+echo "## GitHub Actions"
+ls .github/workflows/ 2>/dev/null | head -20
+
+echo ""
+echo "## Cloud Build"
+ls cloudbuild*yaml cloudbuild*/ 2>/dev/null | head -10
+
+echo ""
+echo "## Cloud Run / Cloud Functions triggers"
+gcloud functions list --format="table(name, trigger.eventType)" 2>/dev/null | head -20 || echo "(gcloud CLI no disponible)"
+```
+
+Auto-detect triggers from GitHub Actions:
+
+```bash
+for file in .github/workflows/*.yml .github/workflows/*.yaml 2>/dev/null; do
+  echo "=== $file ==="
+  sed -n '/^on:/,/^jobs:/p' "$file"
+  echo ""
+done
+```
+
+Write `.context8/PIPELINES.md`:
+
+```markdown
+# Pipelines — [project name]
+
+## Triggers overview
+
+| Pipeline | Trigger | Action | Target | Source config |
+|----------|---------|--------|--------|---------------|
+| Deploy preprod | push to `main` | build + deploy | Cloud Run — pre | `.github/workflows/deploy-pre.yml` |
+| Deploy production | tag `v*` | build + deploy | Cloud Run — prod | `cloudbuild-prod.yaml` |
+| Tests | PR to `develop` / `feat/*` | pytest + lint | CI (GitHub Actions) | `.github/workflows/test.yml` |
+| Nightly e2e | schedule (06:00 UTC) | e2e tests | CI (Cloud Build) | `cloudbuild-nightly.yaml` |
+
+## GitHub Actions workflows
+
+| Workflow | Triggers | Description |
+|----------|----------|-------------|
+| `test.yml` | PR a develop, feat/* | Tests unitarios + lint |
+| `deploy-pre.yml` | push a main | Build + deploy a preprod |
+| `release.yml` | tag v* | Build + deploy a producción |
+
+## Cloud Build triggers
+
+| Trigger | Event | Target | Config |
+|---------|-------|--------|--------|
+| deploy-prod | tag v* | Cloud Run production | `cloudbuild-prod.yaml` |
+
+> Si el trigger está desplegado manualmente en GCP Console
+> y no tiene archivo YAML en el repo, se documenta como **External**.
+
+## External triggers (no están en el repo)
+
+Los siguientes triggers existen en el entorno cloud pero NO tienen configuración en el repositorio:
+
+| Trigger | Source | Action | Environment | Config location |
+|---------|--------|--------|-------------|-----------------|
+| Deploy preprod | push a `main` (GCP trigger) | Build → Cloud Run Pre | preprod | GCP Console — Cloud Build triggers |
+| Nightly DB backup | Cloud Scheduler (06:00 UTC) | Backup script | production | GCP Console — Cloud Scheduler |
+| PubSub → Function | Pub/Sub topic `new-user` | Cloud Function `onboard-user` | production | GCP Console — Cloud Functions |
+
+> **Mantenimiento**: Si se crea, modifica o elimina un trigger externo,
+> actualizar esta sección manualmente o vía CI/CD skill.
+
+## Environments
+
+| Environment | URL / endpoint | Deploy method | Deploy trigger | Approvals |
+|-------------|----------------|---------------|----------------|-----------|
+| Development | `localhost:8080` | docker compose / `uv run` | — | — |
+| Preproduction | `pre.example.com` | Cloud Build push to main | automático | — |
+| Production | `example.com` | Cloud Build tag v* | manual | requiere approval |
+
+## How to trigger a deploy manually
+
+```bash
+# Preproducción: push a main
+git push origin main
+
+# Producción: crear tag semver
+git tag -a v1.2.3 -m "release: auth module refactor"
+git push origin v1.2.3
+```
 ```
 
 ### .context8/architecture/data_flow.md
@@ -325,6 +430,7 @@ Before considering this task done, verify:
 - [ ] AGENT_CONTEXT.md has all required sections populated (not placeholder text)
 - [ ] AGENT_SYSTEM_PROMPT.md is ready to paste as a system prompt
 - [ ] REPO_BRANCHES.md created with all branches listed and purpose inferred
+- [ ] PIPELINES.md created with CI/CD triggers, workflows, and external triggers documented
 - [ ] Root README.md references .context8/
 - [ ] All documentation is written in English
 - [ ] No secrets or .env values were written to any file

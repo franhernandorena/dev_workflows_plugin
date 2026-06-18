@@ -176,6 +176,27 @@ For each dimension, write findings: what exists, what is missing, severity (high
 - Is there commented-out code suggesting abandoned work?
 - Are there migrations that have never been run or are inconsistent?
 
+### 2.8 CI/CD & pipelines
+```bash
+echo "=== GitHub Actions workflows ==="
+ls .github/workflows/ 2>/dev/null || echo "(none)"
+
+echo ""
+echo "=== Cloud Build configs ==="
+ls cloudbuild*yaml cloudbuild*/ 2>/dev/null || echo "(none)"
+
+echo ""
+echo "=== External triggers check ==="
+ls .context8/PIPELINES.md 2>/dev/null || echo "No PIPELINES.md documented"
+```
+
+- Does `.context8/PIPELINES.md` exist and is it up to date?
+- Does `.context8/REPO_BRANCHES.md` document tag triggers correctly?
+- Are all CI/CD triggers (GH Actions, Cloud Build, external) documented?
+- Is the deploy process manual or automated? Are approvals required?
+- Are there environments documented (dev/pre/prod) with deploy methods?
+- Are there external triggers (Cloud Scheduler, Pub/Sub, webhooks) that an agent should know about?
+
 ---
 
 ## Phase 3 — Write Audit Report
@@ -202,13 +223,14 @@ Create `.context8/AUDIT.md`:
 
 | Dimension | Score | Notes |
 |-----------|-------|-------|
-| Documentation | 🔴 / 🟡 / 🟢 | [one-line summary] |
-| Test coverage | 🔴 / 🟡 / 🟢 | [one-line summary] |
-| Architecture clarity | 🔴 / 🟡 / 🟢 | [one-line summary] |
-| Code conventions | 🔴 / 🟡 / 🟢 | [one-line summary] |
-| Dependencies & security | 🔴 / 🟡 / 🟢 | [one-line summary] |
-| Operational readiness | 🔴 / 🟡 / 🟢 | [one-line summary] |
-| Technical debt | 🔴 / 🟡 / 🟢 | [one-line summary] |
+|| Documentation | 🔴 / 🟡 / 🟢 | [one-line summary] |
+|| Test coverage | 🔴 / 🟡 / 🟢 | [one-line summary] |
+|| Architecture clarity | 🔴 / 🟡 / 🟢 | [one-line summary] |
+|| Code conventions | 🔴 / 🟡 / 🟢 | [one-line summary] |
+|| Dependencies & security | 🔴 / 🟡 / 🟢 | [one-line summary] |
+|| Operational readiness | 🔴 / 🟡 / 🟢 | [one-line summary] |
+|| CI/CD & pipelines | 🔴 / 🟡 / 🟢 | [one-line summary] |
+|| Technical debt | 🔴 / 🟡 / 🟢 | [one-line summary] |
 
 🔴 = critical gaps / 🟡 = partially covered / 🟢 = adequate
 

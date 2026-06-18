@@ -45,9 +45,11 @@ cat pyproject.toml 2>/dev/null | head -30
 cat package.json 2>/dev/null | head -30
 ```
 
-### 1.3 Read architecture docs
-```
+### 1.3 Read architecture & CI/CD docs
+```bash
 ls .context8/architecture/ 2>/dev/null
+cat .context8/REPO_BRANCHES.md 2>/dev/null || echo "No REPO_BRANCHES.md"
+cat .context8/PIPELINES.md 2>/dev/null || echo "No PIPELINES.md"
 ```
 
 ---

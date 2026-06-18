@@ -46,7 +46,7 @@ git diff --stat HEAD
 ```
 
 ### 1.2 Branch documentation
-Repasar el estado actual de cada rama y actualizar `.context8/REPO_BRANCHES.md` si hay cambios (ramas nuevas, mergeadas, o eliminadas desde la última sesión).
+Repasar el estado actual de cada rama y actualizar `.context8/repo-branches.md` si hay cambios (ramas nuevas, mergeadas, o eliminadas desde la última sesión).
 
 ```bash
 for branch in $(git branch --format='%(refname:short)'); do
@@ -75,7 +75,7 @@ Document everything found. Nothing should be hidden from the next agent.
 
 ## Phase 2 — Update .context8/
 
-### 2.1 AGENT_CONTEXT.md and REPO_BRANCHES.md
+### 2.1 AGENT_CONTEXT.md and repo-branches.md
 Read `.context8/AGENT_CONTEXT.md`. For every section, verify it reflects the current state of the codebase:
 
 - Tech stack: any new dependencies or version changes?
@@ -92,6 +92,12 @@ Also read `.context8/REPO_BRANCHES.md` (if it exists) and update it:
 - Add any new branches created during this session.
 - Mark merged branches as `merged`, stale branches as `stale`.
 - Update last-activity dates.
+
+Also read `.context8/PIPELINES.md` (if it exists) and update it:
+- Add any new CI/CD workflows or triggers created during this session.
+- Remove pipelines that no longer exist.
+- Update external trigger notes if any configuration changed.
+- If it doesn't exist and CI/CD is relevant, create a basic PIPELINES.md.
 
 ### 2.2 Architecture docs
 For each file in `.context8/architecture/`, verify and update if stale:
@@ -130,7 +136,7 @@ Create or update `.context8/HANDOFF.md`:
 
 ## Git State
 - Branch: [branch name]
-- Branches doc: `.context8/REPO_BRANCHES.md` (updated)
+- Branches doc: `.context8/repo-branches.md` (updated)
 - Uncommitted changes: [yes/no — list files if yes]
 - Unpushed commits: [yes/no — list if yes]
 - Open PRs: [link or "none"]
