@@ -47,7 +47,13 @@ find . -maxdepth 2 -name ".git" -type d | sed 's|/.git||' | sort
 ### 1.2 Check git status in every child repo
 ```bash
 for repo in $(find . -maxdepth 2 -name ".git" -type d | sed 's|/.git||'); do
-  echo "=== $repo ===" && git -C "$repo" status --short && git -C "$repo" log --oneline -5
+  echo "=== $repo ==="
+  git -C "$repo" fetch --prune 2>&1 | grep -v "^$"
+  git -C "$repo" status --short
+  git -C "$repo" log --oneline -5
+  echo "  Branches:"
+  git -C "$repo" branch -a | head -10
+  echo ""
 done
 ```
 

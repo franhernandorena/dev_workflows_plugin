@@ -34,19 +34,35 @@ Run these immediately at session start:
 
 ### 1.1 Git status
 ```bash
+git fetch --prune 2>&1
 git status
 git log --oneline -15
 git diff --stat HEAD~1 HEAD 2>/dev/null || true
 git stash list
+git branch -a
 ```
 
-### 1.2 Verify you are on the right branch
+### 1.2 Verificar ramas documentadas
+```bash
+# Mostrar ramas con su última actividad
+echo "=== Ramas locales ==="
+for branch in $(git branch --format='%(refname:short)'); do
+  last_date=$(git log "$branch" -1 --format="%ci" 2>/dev/null)
+  ahead=$(git rev-list --count "$branch" --not origin/"$branch" 2>/dev/null)
+  behind=$(git rev-list --count origin/"$branch" --not "$branch" 2>/dev/null)
+  echo "  $branch | $last_date | ahead=$ahead behind=$behind"
+done
+```
+
+Si existe `.context8/REPO_BRANCHES.md`, verificar que las ramas actuales coinciden con lo documentado. Si hay diferencias (ramas nuevas, ramas mergeadas ya eliminadas), actualizar el archivo.
+
+### 1.3 Verify you are on the right branch
 ```bash
 git branch --show-current
 ```
 If uncertain about which branch to use, stop and ask before proceeding.
 
-### 1.3 Check for local changes
+### 1.4 Check for local changes
 ```bash
 git diff --name-only
 git diff --cached --name-only

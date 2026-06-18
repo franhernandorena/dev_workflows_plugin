@@ -56,12 +56,24 @@ Read every config file present:
 - .env.example / .env.template (NEVER .env itself)
 - Makefile / justfile / taskfile.yml
 
-### 1.3 Git history & contributors
+### 1.3 Git history & branches
+
 ```bash
+git fetch --prune 2>&1
 git log --oneline -30
 git branch -a
 git remote -v
 git tag --sort=-creatordate | head -20
+```
+
+Para cada rama local (excluyendo `main`, `master`, `develop`), detectar su propósito:
+
+```bash
+for branch in $(git branch --format='%(refname:short)' | grep -v '^main$\|^master$\|^develop$'); do
+  last_msg=$(git log "$branch" -1 --format="%s" 2>/dev/null)
+  last_date=$(git log "$branch" -1 --format="%ci" 2>/dev/null)
+  echo "  $branch | $last_date | $last_msg"
+done
 ```
 
 ### 1.4 CI/CD pipelines
@@ -126,6 +138,7 @@ Create the following structure. Every file is mandatory.
 ├── AGENT_CONTEXT.md              # Comprehensive project context
 ├── AGENT_SYSTEM_PROMPT.md        # System prompt for new agent instantiation
 ├── PROJECT_OVERVIEW.md           # 1-page high-level summary
+├── REPO_BRANCHES.md              # Branches, tags, git conventions (shared con repo-cleanup)
 ├── architecture/
 │   ├── data_flow.md              # End-to-end data / request flow
 │   ├── key_patterns.md           # Design patterns, conventions, anti-patterns
@@ -201,6 +214,68 @@ Write a ready-to-paste system prompt that:
 ### .context8/PROJECT_OVERVIEW.md
 1-page summary: what the project does, who uses it, key architectural decisions, current state, next priorities.
 
+### .context8/REPO_BRANCHES.md
+Create the branch reference file. Run these commands to gather data:
+
+```bash
+# Protected branches (convention)
+echo "## Protected Branches"
+echo "- \`main\` — Producción estable"
+echo "- \`develop\` — Integración de desarrollo"
+
+# Git user
+echo ""
+echo "## Git Conventions"
+echo "- User: $(git config user.name) <$(git config user.email)>"
+echo "- Merge: [merge strategy used in this project]"
+
+# All local branches with dates and last messages
+echo ""
+echo "## Branches"
+for branch in $(git branch --format='%(refname:short)' | sort); do
+  last_date=$(git log "$branch" -1 --format="%ci" 2>/dev/null)
+  last_msg=$(git log "$branch" -1 --format="%s" 2>/dev/null)
+  behind=$(git rev-list --count --left-right origin/HEAD..."$branch" 2>/dev/null | cut -f2)
+  ahead=$(git rev-list --count --left-right "$branch"...origin/"$branch" 2>/dev/null | cut -f1)
+  echo "- \`$branch\` — (último: $last_date) $last_msg"
+done
+
+# Tags
+echo ""
+echo "## Tags"
+for tag in $(git tag --sort=-creatordate | head -10); do
+  tag_date=$(git log "$tag" -1 --format="%ci" 2>/dev/null)
+  echo "- \`$tag\` — $tag_date"
+done
+```
+
+Use the output to write `.context8/REPO_BRANCHES.md`:
+
+```markdown
+# Repo Branches — [project name]
+
+## Protected Branches
+- `main` — Producción estable
+- `develop` — Integración de desarrollo
+
+## Git Conventions
+- **User**: [name] <[email]>
+- **Branch naming**: [convention, e.g. feat/xxx, fix/xxx, hotfix/xxx]
+
+## Branches
+
+| Branch | Last activity | Purpose | Status |
+|--------|--------------|---------|--------|
+| `main` | YYYY-MM-DD | Producción estable | active |
+| `develop` | YYYY-MM-DD | Integración | active |
+| `feat/xxx` | YYYY-MM-DD | [inferred from commit messages] | stale / active / merged |
+
+## Tags
+| Tag | Date | Description |
+|-----|------|-------------|
+| v1.0.0 | YYYY-MM-DD | [from tag message] |
+```
+
 ### .context8/architecture/data_flow.md
 Trace the full lifecycle of a request or data record from entry to exit.
 Include: sources → ingestion → processing/transformation → storage → output/API.
@@ -249,6 +324,7 @@ Before considering this task done, verify:
 - [ ] .context8/ directory exists with all required files
 - [ ] AGENT_CONTEXT.md has all required sections populated (not placeholder text)
 - [ ] AGENT_SYSTEM_PROMPT.md is ready to paste as a system prompt
+- [ ] REPO_BRANCHES.md created with all branches listed and purpose inferred
 - [ ] Root README.md references .context8/
 - [ ] All documentation is written in English
 - [ ] No secrets or .env values were written to any file

@@ -55,11 +55,24 @@ Read every config file present:
 
 ### 1.3 Git history & activity
 ```bash
+git fetch --prune 2>&1
 git log --oneline -30
 git branch -a
 git remote -v
 git shortlog -sn --all | head -10
 git log --oneline --all --since="90 days ago" | wc -l
+```
+
+Para cada rama local, detectar su propósito:
+
+```bash
+echo "=== Ramas y su propósito ==="
+for branch in $(git branch --format='%(refname:short)' | sort); do
+  last_date=$(git log "$branch" -1 --format="%ci" 2>/dev/null)
+  last_msg=$(git log "$branch" -1 --format="%s" 2>/dev/null)
+  behind_main=$(git rev-list --count origin/main..."$branch" 2>/dev/null)
+  echo "$branch | $last_date | $last_msg"
+done
 ```
 
 ### 1.4 CI/CD pipelines

@@ -37,6 +37,7 @@ Use this when leaving a project so the next agent (or developer) can pick up wit
 
 ### 1.1 Git state
 ```bash
+git fetch --prune 2>&1
 git status
 git log --oneline -20
 git branch -a
@@ -44,13 +45,24 @@ git stash list
 git diff --stat HEAD
 ```
 
-### 1.2 Open tasks
+### 1.2 Branch documentation
+Repasar el estado actual de cada rama y actualizar `.context8/REPO_BRANCHES.md` si hay cambios (ramas nuevas, mergeadas, o eliminadas desde la última sesión).
+
+```bash
+for branch in $(git branch --format='%(refname:short)'); do
+  last_date=$(git log "$branch" -1 --format="%ci" 2>/dev/null)
+  ahead=$(git rev-list --count "$branch" --not origin/"$branch" 2>/dev/null)
+  echo "  $branch | $last_date | ahead=$ahead"
+done
+```
+
+### 1.3 Open tasks
 ```bash
 ls -lt .context8/tasks/ | head -20
 ```
 Read every task file whose status is "In progress" or "Blocked".
 
-### 1.3 Uncommitted or unpushed work
+### 1.4 Uncommitted or unpushed work
 ```bash
 git diff --name-only
 git diff --cached --name-only
@@ -63,7 +75,7 @@ Document everything found. Nothing should be hidden from the next agent.
 
 ## Phase 2 — Update .context8/
 
-### 2.1 AGENT_CONTEXT.md
+### 2.1 AGENT_CONTEXT.md and REPO_BRANCHES.md
 Read `.context8/AGENT_CONTEXT.md`. For every section, verify it reflects the current state of the codebase:
 
 - Tech stack: any new dependencies or version changes?
@@ -75,6 +87,11 @@ Read `.context8/AGENT_CONTEXT.md`. For every section, verify it reflects the cur
 - Known constraints & gotchas: anything discovered that should be recorded?
 
 Update every section that is stale. Mark sections you cannot verify as `[Unverified as of YYYY-MM-DD]`.
+
+Also read `.context8/REPO_BRANCHES.md` (if it exists) and update it:
+- Add any new branches created during this session.
+- Mark merged branches as `merged`, stale branches as `stale`.
+- Update last-activity dates.
 
 ### 2.2 Architecture docs
 For each file in `.context8/architecture/`, verify and update if stale:
@@ -113,6 +130,7 @@ Create or update `.context8/HANDOFF.md`:
 
 ## Git State
 - Branch: [branch name]
+- Branches doc: `.context8/REPO_BRANCHES.md` (updated)
 - Uncommitted changes: [yes/no — list files if yes]
 - Unpushed commits: [yes/no — list if yes]
 - Open PRs: [link or "none"]

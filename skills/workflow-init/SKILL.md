@@ -153,8 +153,9 @@ Read every config file present:
 - .env.example / .env.template (NEVER .env itself)
 - Makefile / justfile / taskfile.yml
 
-#### Git history
+#### Git history & branches
 ```bash
+git fetch --prune 2>&1
 git log --oneline -30
 git branch -a
 git remote -v
@@ -198,6 +199,8 @@ Inside the child repo, create:
 ├── AGENT_CONTEXT.md              # Comprehensive repo context
 ├── AGENT_SYSTEM_PROMPT.md        # System prompt for new agent instantiation
 ├── PROJECT_OVERVIEW.md           # 1-page high-level summary
+├── REPO_BRANCHES.md              # Branches, tags, git conventions
+├── WORKSPACE_LINK.md             # Reference to sibling repos (Phase 3.7)
 ├── architecture/
 │   ├── data_flow.md
 │   ├── key_patterns.md
@@ -279,7 +282,54 @@ Ready-to-paste system prompt:
 
 **architecture/infrastructure.md**: Cloud services, env vars (name + purpose + example, no real secrets), container setup, how to run locally, how to deploy.
 
-### 3.7 Create WORKSPACE_LINK.md (per repo)
+### 3.7 Create REPO_BRANCHES.md (per repo)
+
+For each child repo, create `.context8/REPO_BRANCHES.md`:
+
+```bash
+# Gather data
+echo "## Protected Branches"
+echo "- \`main\` — Producción estable"
+echo "- \`develop\` — Integración de desarrollo"
+echo ""
+echo "## Branches"
+for branch in $(git branch --format='%(refname:short)' | sort); do
+  last_date=$(git log "$branch" -1 --format="%ci" 2>/dev/null)
+  last_msg=$(git log "$branch" -1 --format="%s" 2>/dev/null)
+  echo "- \`$branch\` — ($last_date) $last_msg"
+done
+echo ""
+echo "## Tags"
+for tag in $(git tag --sort=-creatordate | head -10); do
+  tag_date=$(git log "$tag" -1 --format="%ci" 2>/dev/null)
+  echo "- \`$tag\` — $tag_date"
+done
+```
+
+Write `<repo>/.context8/REPO_BRANCHES.md`:
+
+```markdown
+# Repo Branches — [repo name]
+
+## Protected Branches
+- `main` — Producción estable
+- `develop` — Integración de desarrollo
+
+## Branches
+
+| Branch | Last activity | Purpose | Status |
+|--------|--------------|---------|--------|
+| `main` | YYYY-MM-DD | Producción estable | active |
+| `develop` | YYYY-MM-DD | Integración | active |
+| `feat/xxx` | YYYY-MM-DD | [commit message] | active |
+
+## Tags
+| Tag | Date | Description |
+|-----|------|-------------|
+| v1.0.0 | YYYY-MM-DD | [tag message] |
+```
+
+### 3.8 Create WORKSPACE_LINK.md (per repo)
 
 Inside each child repo's `.context8/`, create `WORKSPACE_LINK.md`:
 
@@ -333,6 +383,7 @@ After all child repos are bootstrapped, update the root `.context8/README.md`:
 - [ ] Each child repo has a complete `.context8/` with all required files
 - [ ] AGENT_CONTEXT.md for each repo has all sections (no placeholder text)
 - [ ] AGENT_SYSTEM_PROMPT.md for each repo is ready to paste
+- [ ] REPO_BRANCHES.md created per repo with branches and tags listed
 - [ ] Each repo's README.md references its `.context8/` and the root `.context8/`
 - [ ] Root README.md (or WORKSPACE_OVERVIEW.md) links all repos
 - [ ] All documentation written in English

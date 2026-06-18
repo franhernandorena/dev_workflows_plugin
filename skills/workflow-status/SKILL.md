@@ -64,9 +64,13 @@ Identify all repos listed in the workspace.
 
 For each repo in the workspace, gather the following. Run queries in parallel where possible.
 
-### 2.1 Current branch
+### 2.1 Current branch & purpose
 ```bash
-git branch --show-current
+BRANCH=$(git branch --show-current)
+echo "branch=$BRANCH"
+# Leer propósito desde REPO_BRANCHES.md si existe
+PURPOSE=$(grep "| \`$BRANCH\`" .context8/REPO_BRANCHES.md 2>/dev/null | head -1 | awk -F'|' '{print $3}')
+echo "purpose=${PURPOSE:-$(echo "desconocido")}"
 ```
 
 ### 2.2 Uncommitted changes
@@ -115,11 +119,11 @@ Synthesize findings into a structured markdown report:
 # Workspace Status — YYYY-MM-DD HH:MM
 
 ## Summary
-| Repo | Branch | Status | Ahead/Behind | Active Tasks | CI |
-|------|--------|--------|-------------|--------------|-----|
-| repo-a | main | clean | 0/0 | 1 task | ✅ passing |
-| repo-b | feat/x | 2 modified | 3/0 | 2 tasks | 🟡 in progress |
-| repo-c | develop | 1 staged | 0/1 | none | ❌ failed |
+| Repo | Branch | Purpose | Status | Ahead/Behind | Active Tasks | CI |
+|------|--------|---------|--------|-------------|--------------|-----|
+| repo-a | main | Producción estable | clean | 0/0 | 1 task | ✅ passing |
+| repo-b | feat/x | Nueva API auth | 2 modified | 3/0 | 2 tasks | 🟡 in progress |
+| repo-c | develop | Integración | 1 staged | 0/1 | none | ❌ failed |
 ```
 
 ## Detailed
