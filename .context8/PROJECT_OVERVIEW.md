@@ -17,10 +17,10 @@ Developers using Claude Code, Codex, Cursor, Gemini CLI, or OpenCode who want co
 
 ## Current state
 
-Stable with 11 skills covering workspace management, project lifecycle, and task execution. Well-documented with README and installation guide.
+Stable with 11+ skills covering workspace management, project lifecycle, task execution, and agent generation. Includes a session-start hook (`hooks/context8_session_start.py`) that checks `.context8/` at startup and routes agents to the correct init skill or summarises active tasks.
 
 ## Next priorities
 
-- Add agent-generator skills (create specialized agent prompts: QA, Architect, Backend, Frontend, DB, Cloud, DevOps/SRE, Security)
-- Add tests for `install.py`
+- Add tests for `install.py` and the session-start hook
 - Add CI/CD pipeline
+- Verify native hook support for Codex, Cursor, Gemini CLI, OpenCode, and Hermes Agent

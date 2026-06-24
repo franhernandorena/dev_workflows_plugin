@@ -2,6 +2,15 @@
 
 Structured prompts for every stage of development work with an AI agent.
 
+## Session-Start Hook
+
+This plugin includes a session-start hook (`hooks/context8_session_start.py`) that runs at every startup.
+
+- **Claude Code**: The hook runs automatically via `hooks/hooks.json` (`SessionStart` event).
+- **Other agents**: The hook is available as a managed startup instruction in your context file. Run `python3 <hook-path>` at startup if instructions are present.
+
+The hook checks whether the current directory has `.context8/`. If missing, it routes you to run `dev-workflows:workflow-init` or `dev-workflows:project-init`. If present, it summarises active tasks.
+
 ## Available Skills
 
 ### Workflows (multi-repo workspaces)
@@ -21,6 +30,8 @@ Structured prompts for every stage of development work with an AI agent.
 - `dev-workflows:task-plan` — produce a detailed implementation plan
 - `dev-workflows:task-do` — execute a planned task step by step
 - `dev-workflows:task-continue` — resume a partially completed task
+- `dev-workflows:task-compacting` — archive completed/cancelled tasks with monthly LLM-friendly summaries
+- `dev-workflows:task-compacting` — archive completed/cancelled tasks with monthly LLM-friendly summaries
 - `dev-workflows:task-review` — pre-PR code review (correctness, security, tests)
 - `dev-workflows:task-hotfix` — urgent production fix with controlled speed
 

@@ -1,0 +1,11 @@
+{
+  "hooks": [
+    {
+      "event": "SessionStart",
+      "matcher": "startup|resume",
+      "type": "command",
+      "command": "${CLAUDE_PLUGIN_ROOT}/hooks/context8_session_start.py",
+      "timeoutMs": 10000
+    }
+  ]
+}

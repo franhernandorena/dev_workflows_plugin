@@ -57,6 +57,7 @@ SKILLS = [
     ("project-review",   "Full project architecture, security, and quality review",          "dev-workflows"),
     ("dependency-audit", "Auditoría de dependencias: vulnerabilidades y versiones",          "dev-workflows"),
     ("release",          "End-to-end release workflow: tag, changelog, publish",              "dev-workflows"),
+    ("task-compacting",  "Archive completed/cancelled tasks with monthly LLM-friendly summaries", "dev-workflows"),
     ("task-continue",    "Resume a partially completed task from the last phase",             "dev-workflows"),
     ("repo-cleanup",     "Limpieza segura de ramas git: propias automático, ajenas con permiso", "dev-workflows"),
     ("tag-create",       "Crea tags git semver: analiza cambios, sugiere versión, pide confirmación", "dev-workflows"),
@@ -65,6 +66,27 @@ SKILLS = [
 
 SKILL_NAMES = [s[0] for s in SKILLS]
 SKILL_CATEGORIES = {s[0]: s[2] for s in SKILLS}
+
+# ─── Hook configuration ────────────────────────────────────────────────────────
+
+NATIVE_HOOK_TOOLS = {"claude"}
+
+HOOK_FALLBACK_START = "<!-- dev-workflows-session-start-hook-start -->"
+HOOK_FALLBACK_END = "<!-- dev-workflows-session-start-hook-end -->"
+
+HOOK_FALLBACK_TEMPLATE = """{start}
+## Session-Start Hook
+
+At startup, run the session-start hook to check .context8/ state:
+
+    python3 {hook_path}
+
+- If .context8/ is missing, follow the hook's instructions to run the correct init skill before user work.
+- If active tasks are reported, load or mention them before starting new work.
+
+For more detail see the Dev Workflows README or run the hook with `--help`.
+{end}
+"""
 
 TOOLS = [
     {
@@ -138,6 +160,162 @@ TOOLS = [
         "project_label": ".hermes/skills/",
     },
 ]
+
+# ─── Hook helpers ──────────────────────────────────────────────────────────────
+
+def get_hook_script_content() -> str:
+    """Return the hook script content from local or remote source."""
+    if SOURCE == "local":
+        path = SCRIPT_DIR / "hooks" / "context8_session_start.py"
+        if path.exists():
+            return path.read_text(encoding="utf-8")
+        raise FileNotFoundError("Missing hooks/context8_session_start.py")
+    else:
+        url = f"{RAW_BASE}/hooks/context8_session_start.py"
+        with urllib.request.urlopen(url, timeout=10) as r:
+            return r.read().decode("utf-8")
+
+
+def get_hook_config_content() -> str:
+    """Return hooks.json content from local or remote source."""
+    if SOURCE == "local":
+        path = SCRIPT_DIR / "hooks" / "hooks.json"
+        if path.exists():
+            return path.read_text(encoding="utf-8")
+        raise FileNotFoundError("Missing hooks/hooks.json")
+    else:
+        url = f"{RAW_BASE}/hooks/hooks.json"
+        with urllib.request.urlopen(url, timeout=10) as r:
+            return r.read().decode("utf-8")
+
+
+def install_hook_assets(tool: dict, base: Path, dry: bool) -> tuple[int, int, list[str]]:
+    """Install hook script and (for native hook tools) hooks.json.
+    Returns (created, updated, errors).
+    Hook script goes to base/hooks/context8_session_start.py.
+    hooks.json (native) goes to base.parent/hooks/hooks.json.
+    """
+    created = updated = 0
+    errors = []
+
+    # Hook script goes in base/hooks/
+    hooks_dir = base / "hooks"
+    try:
+        script_content = get_hook_script_content()
+        script_dest = hooks_dir / "context8_session_start.py"
+        status = write_file(script_dest, script_content, dry)
+        if status == "created":
+            created += 1
+        else:
+            updated += 1
+    except Exception as e:
+        errors.append(f"hook script: {e}")
+
+    # hooks.json for native hook tools goes in plugin_root/hooks/
+    if tool["id"] in NATIVE_HOOK_TOOLS:
+        try:
+            config_content = get_hook_config_content()
+            plugin_root = base.parent  # skills dir is child of plugin root
+            config_dest = plugin_root / "hooks" / "hooks.json"
+            status = write_file(config_dest, config_content, dry)
+            if status == "created":
+                created += 1
+            else:
+                updated += 1
+        except Exception as e:
+            errors.append(f"hooks.json: {e}")
+
+    return created, updated, errors
+
+
+def remove_hook_assets(tool: dict, base: Path, dry: bool) -> tuple[int, list[str]]:
+    """Remove hook assets. Returns (removed, errors)."""
+    removed = 0
+    errors = []
+
+    hooks_dir = base / "hooks"
+    script_dest = hooks_dir / "context8_session_start.py"
+    if script_dest.exists():
+        if not dry:
+            script_dest.unlink()
+        removed += 1
+
+    if tool["id"] in NATIVE_HOOK_TOOLS:
+        plugin_root = base.parent
+        config_dest = plugin_root / "hooks" / "hooks.json"
+        if config_dest.exists():
+            if not dry:
+                config_dest.unlink()
+            removed += 1
+
+    # Remove empty hooks dir
+    if hooks_dir.exists() and not dry:
+        try:
+            hooks_dir.rmdir()  # only if empty
+        except OSError:
+            pass
+
+    return removed, errors
+
+
+def managed_context_path(tool: dict, base: Path) -> Path | None:
+    """Return the path of the managed context file for this tool, if any."""
+    ctx = tool.get("context_file")
+    if not ctx:
+        return None
+    return base / ctx
+
+
+def inject_hook_fallback_block(ctx_dest: Path, hook_path: str, dry: bool) -> tuple[str, str]:
+    """Inject or update the managed hook fallback block in a context file.
+    Returns (action, detail)."""
+    block = HOOK_FALLBACK_TEMPLATE.format(
+        start=HOOK_FALLBACK_START,
+        end=HOOK_FALLBACK_END,
+        hook_path=hook_path,
+    )
+
+    if not ctx_dest.exists():
+        return "skipped", "context file does not exist"
+
+    content = ctx_dest.read_text(encoding="utf-8")
+
+    if HOOK_FALLBACK_START in content and HOOK_FALLBACK_END in content:
+        start_idx = content.index(HOOK_FALLBACK_START)
+        end_idx = content.index(HOOK_FALLBACK_END) + len(HOOK_FALLBACK_END)
+        new_content = content[:start_idx] + block + content[end_idx:]
+        action = "updated"
+    else:
+        new_content = content.rstrip() + "\n" + block + "\n"
+        action = "created"
+
+    if not dry:
+        shutil.copy2(ctx_dest, backup_path(ctx_dest))
+        ctx_dest.write_text(new_content, encoding="utf-8")
+
+    return action, "hook fallback block"
+
+
+def remove_hook_fallback_block(ctx_dest: Path, dry: bool) -> tuple[bool, str]:
+    """Remove the managed hook fallback block from a context file."""
+    if not ctx_dest.exists():
+        return False, "not found"
+
+    content = ctx_dest.read_text(encoding="utf-8")
+
+    if HOOK_FALLBACK_START not in content or HOOK_FALLBACK_END not in content:
+        return False, "no fallback block found"
+
+    start_idx = content.index(HOOK_FALLBACK_START)
+    end_idx = content.index(HOOK_FALLBACK_END) + len(HOOK_FALLBACK_END)
+    new_content = content[:start_idx] + content[end_idx:]
+
+    if not dry:
+        shutil.copy2(ctx_dest, backup_path(ctx_dest))
+        ctx_dest.write_text(new_content, encoding="utf-8")
+
+    return True, "removed fallback block"
+
 
 # ─── Source detection ─────────────────────────────────────────────────────────
 
@@ -236,7 +414,7 @@ def install_skill_for_tool(tool: dict, skill: str, base: Path, dry: bool) -> tup
     return created, updated, errors
 
 def install_tool(tool: dict, skills: list[str], base: Path, dry: bool) -> tuple[int, int, list[str]]:
-    """Install skills + context file for one tool. Returns (created, updated, errors)."""
+    """Install skills + context file + hook assets for one tool. Returns (created, updated, errors)."""
     created = updated = 0
     errors = []
 
@@ -257,10 +435,26 @@ def install_tool(tool: dict, skills: list[str], base: Path, dry: bool) -> tuple[
         except Exception as e:
             errors.append(f"{ctx}: {e}")
 
+    # Install hook assets
+    if not errors:
+        c, u, e = install_hook_assets(tool, base, dry)
+        created += c
+        updated += u
+        errors.extend(e)
+
+    # Inject fallback block into context file for non-native-hook tools
+    if tool["id"] not in NATIVE_HOOK_TOOLS:
+        ctx_dest = managed_context_path(tool, base)
+        if ctx_dest:
+            hook_path = base / "hooks" / "context8_session_start.py"
+            action, detail = inject_hook_fallback_block(ctx_dest, str(hook_path), dry)
+            if action in ("created", "updated"):
+                updated += 1
+
     return created, updated, errors
 
 def uninstall_tool(tool: dict, skills: list[str], base: Path, dry: bool) -> tuple[int, list[str]]:
-    """Remove skills + context file for one tool. Returns (removed, errors)."""
+    """Remove skills + context file + hook assets for one tool. Returns (removed, errors)."""
     removed = 0
     errors = []
 
@@ -282,6 +476,18 @@ def uninstall_tool(tool: dict, skills: list[str], base: Path, dry: bool) -> tupl
         if dest.exists():
             if not dry:
                 dest.unlink()
+            removed += 1
+
+    # Remove hook assets
+    r, e = remove_hook_assets(tool, base, dry)
+    removed += r
+    errors.extend(e)
+
+    # Remove fallback block from context file
+    ctx_dest = managed_context_path(tool, base)
+    if ctx_dest and ctx_dest.exists():
+        ok, _ = remove_hook_fallback_block(ctx_dest, dry)
+        if ok:
             removed += 1
 
     return removed, errors

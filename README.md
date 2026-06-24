@@ -71,6 +71,12 @@ Requires [uv](https://docs.astral.sh/uv/). Supports Claude Code, Codex, Cursor, 
 | `deploy-plan` | `/dev-workflows:deploy-plan` | Plan deployment with rollback and verification |
 | `release` | `/dev-workflows:release` | End-to-end release: version bump, changelog, tag, publish |
 
+### Startup Hook
+
+All supported agents now include a **session-start hook** that checks the working directory at startup. It detects whether `.context8/` exists and routes the agent to the correct init skill or summarizes active tasks.
+
+See [Session-Start Hook](#session-start-hook) for details.
+
 ### Agent Generators
 
 | Skill | Invoke | When to use |
@@ -186,6 +192,38 @@ uv run install.py --uninstall # remove
 
 ---
 
+## Session-Start Hook
+
+Every startup, the Dev Workflows session-start hook checks whether the current directory has `.context8/` and routes the agent accordingly.
+
+### What it does
+
+1. **Detects `.context8/`** in the current working directory.
+2. **Missing `.context8/`**: classifies as workspace root (multiple child `.git` dirs) or single project and forces the agent to run `dev-workflows:workflow-init` or `dev-workflows:project-init` before user work.
+3. **Existing `.context8/`**: reads context files and reports active tasks (Planned, In progress, Blocked) from `.context8/tasks/*.md`.
+4. **Workspace roots**: also scans child repos for active tasks.
+
+### Support matrix
+
+| Agent | Hook mechanism | Status |
+|-------|---------------|--------|
+| Claude Code | Native `SessionStart` plugin hook via `hooks/hooks.json` | ✅ Native |
+| Codex | Managed startup instruction block | ⚠️ Fallback |
+| Cursor | Managed startup instruction block | ⚠️ Fallback |
+| Gemini CLI | Managed startup instruction block | ⚠️ Fallback |
+| OpenCode | Managed startup instruction block | ⚠️ Fallback |
+| Hermes Agent | Managed startup instruction block | ⚠️ Fallback |
+
+The hook script (`hooks/context8_session_start.py`) is stdlib-only Python 3.11+ shared by all agents. Agents with native hooks call it directly; others get a startup instruction in their context file that tells the agent to invoke the hook before user work.
+
+### Disable or remove
+
+```bash
+uv run install.py --uninstall  # removes hook assets and managed blocks
+```
+
+---
+
 ## Agent Documentation
 
 This project uses a structured documentation system in `.context8/`.
@@ -205,6 +243,10 @@ agents_prompts/
 ├── GEMINI.md                     # Plugin context for Gemini CLI
 ├── gemini-extension.json         # Gemini extension manifest
 ├── AGENTS.md                     # Plugin context for OpenCode / Hermes Agent
+│
+├── hooks/                        # Session-start hook (shared by all agents)
+│   ├── context8_session_start.py # Stdlib-only Python detector + reporter
+│   └── hooks.json                # Claude Code native SessionStart hook config
 │
 ├── .context8/                    # Agent documentation & reports
 │   ├── AGENT_CONTEXT.md

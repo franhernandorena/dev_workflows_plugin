@@ -60,6 +60,23 @@ agents_prompts/
 
 Usuario invoca skill -> AI agent carga SKILL.md -> Sigue fases del prompt -> Produce output (`.context8/` files, tareas, PRs, etc.)
 
+## Session-Start Hook
+
+The hook (`hooks/context8_session_start.py`) runs at every agent startup.
+
+**Contract:**
+- Input: current working directory, optional native hook JSON from the agent.
+- Missing `.context8/` → classify (workspace or project) and output a mandatory first action to run `dev-workflows:workflow-init` or `dev-workflows:project-init`.
+- Existing `.context8/` → output context summary and task inventory from `.context8/tasks/*.md`.
+- Workspace roots → also scan child repos at depth 1-2 for active tasks.
+
+**Support matrix:**
+
+| Agent | Mechanism |
+|-------|-----------|
+| Claude Code | Native `SessionStart` plugin hook via `hooks/hooks.json` |
+| Codex, Cursor, Gemini CLI, OpenCode, Hermes | Managed startup instruction block in context file |
+
 ## Key Modules & Their Responsibilities
 
 | Modulo | Proposito | Archivos clave |
