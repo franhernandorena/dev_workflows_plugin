@@ -4,6 +4,9 @@ version: 1.0.0
 description: Before task-plan or any complex change, analyzes which modules, files, tests, and dependencies will be affected
 ---
 
+> Posture: see `AGENTS.md` → `Posture & Conventions`. This skill follows the
+> global environment, MCP, commit, and questioning rules.
+
 # Change Impact — Analyze Blast Radius Before Coding
 
 ## Overview
@@ -52,6 +55,17 @@ If the change is ambiguous, ask:
 ## Phase 2 — Dependency Analysis
 
 For each primary file or symbol, trace:
+
+### 2.0 Consult the code-review-graph (primary source)
+
+```bash
+# Keep the graph out of conversation memory — use ctx_execute with sqlite3
+sqlite3 .code-review-graph/graph.db ".tables"
+# Then for each primary file/symbol: list callers, importers, dependents
+```
+
+Use the graph as the primary source. The `grep` sub-sections below
+(2.1, 2.2, 2.3) are fallback if the graph is missing or stale.
 
 ### 2.1 Direct dependencies (what it imports/uses)
 ```bash
@@ -125,6 +139,11 @@ Synthesize findings into a structured report:
 - **Transitive impact**: 12 files across 3 modules
 - **Tests affected**: 4 test files, 2 new tests needed
 - **Overall risk**: Medium
+
+## Environment
+- Detected: `dev` | `beta` | `prod`
+- Recommended permissions for the change: see global `Posture &
+  Conventions` → `Environment & Permissions`.
 
 ## Affected Files
 
