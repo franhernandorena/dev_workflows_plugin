@@ -4,6 +4,9 @@ version: 1.0.0
 description: Use at the start of any session on an existing project — checks git state, loads .context8 context, sets up or resumes task file, and enforces working rules before any code changes
 ---
 
+> Posture: see `AGENTS.md` → `Posture & Conventions`. This skill follows the
+> global environment, MCP, commit, and questioning rules.
+
 # Project Continue — Session Bootstrap
 
 ## Overview
@@ -27,6 +30,22 @@ Session bootstrap for an existing project. Orients in the codebase (git state, b
 ## RULE: Complete every step in order. Do not start the task until Phase 3 is done.
 
 ---
+
+## Phase 0 — Environment & Posture
+
+Before doing any work, confirm the target environment and posture:
+
+1. **Detect the environment** from the current branch, `.env.*` files, or
+   any other signal. If unclear, ASK the user.
+2. **State the detected environment** explicitly in 1 sentence. Example:
+   "Current branch is `feat/foo` → `dev`. Confirmed?"
+3. **If `prod`**: STOP. Do not start `Phase 1` until the user has written
+   the exact action they want performed. "Sure, go ahead" is not enough.
+4. **If `beta`**: proceed but restate the ASK-per-op rule before any
+   non-read action.
+5. **If `dev`**: proceed.
+
+Record the environment in the task file: `**Environment**: dev | beta | prod`.
 
 ## Phase 1 — Orient in the Codebase
 
@@ -84,6 +103,10 @@ Read in this exact order. Do not skip or reorder.
    - `.context8/architecture/key_patterns.md` → if adding new features or refactoring
    - `.context8/architecture/module_map.md` → if crossing module boundaries
    - `.context8/architecture/infrastructure.md` → if touching config, env vars, or deployment
+4. **`.code-review-graph/graph.db` summary** — run via `ctx_execute` with
+   `sqlite3` to read `nodes` and `edges` counts only. Do NOT dump the DB
+   into conversation memory. Use the counts to anticipate blast radius
+   while reading the architecture docs.
 
 If `.context8/` does not exist: stop and run `project-init` before continuing.
 
@@ -129,6 +152,7 @@ ls -lt .context8/tasks/ 2>/dev/null | head -10
 **Date**: YYYY-MM-DD
 **Status**: In progress | Blocked | Complete
 **Branch**: [branch name]
+**Environment**: dev | beta | prod
 **Workspace**: [workspace name — only if parent workspace detected in 2.1]
 
 ## Objective
@@ -148,8 +172,8 @@ Sibling repos: [repo1 (purpose), repo2 (purpose)].
 [Brief plan: what files will be touched and in what order.]
 
 ## Progress Log
-- [HH:MM] Started. Reading X, Y, Z.
-- [HH:MM] ...
+- YYYY-MM-DD: Started. Reading X, Y, Z.
+- YYYY-MM-DD: ...
 
 ## Decisions Made
 [Any architectural or implementation decisions taken, with reasoning.]
