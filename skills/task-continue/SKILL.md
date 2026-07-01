@@ -1,6 +1,6 @@
 ---
 name: task-continue
-version: 1.0.0
+version: 1.1.0
 description: Resume a partially completed task — reloads state from task file, checks what's been done, and continues from the last incomplete phase
 ---
 

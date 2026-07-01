@@ -1,6 +1,6 @@
 ---
 name: task-compacting
-version: 1.0.0
+version: 1.1.0
 description: Use when .context8/tasks/ has accumulated many completed/cancelled tasks — archive old tasks and generate monthly summary documents for LLM-friendly historical overview.
 author: Hermes Agent
 license: MIT
