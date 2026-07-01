@@ -4,6 +4,9 @@ version: 1.0.0
 description: Use for urgent production bugs where normal planning overhead is too slow — triage, locate root cause, minimal fix, security check, verify, and ship with a fast-track PR
 ---
 
+> Posture: see `AGENTS.md` → `Posture & Conventions`. This skill follows the
+> global environment, MCP, commit, and questioning rules.
+
 # Task Hotfix — Urgent Production Fix
 
 ## Overview
@@ -35,6 +38,20 @@ If the fix requires more than 20 lines changed: pause. Use a targeted mitigation
 Use for urgent bugs in production where normal planning overhead is too slow. Phases are compressed but not skipped. Every change is deliberate.
 
 ---
+
+## Phase 0 — Environment Gate (strict)
+
+Hotfixes target production by definition. Apply the matrix strictly:
+
+| Environment | Rule |
+|-------------|------|
+| `prod` | Block ALL actions. The user must write the exact action they want performed. No inferred consent. |
+| `beta` | ASK per commit. The agent drafts; the user types "go" before each `git commit`. |
+| `dev`  | Follow the global rule (ASK per commit). If the user has granted explicit batch permission at hotfix-start time, the agent may propose all commits at the end and ask once. |
+
+In `prod`: if the fix requires more than 20 lines changed, pause and
+replan as a targeted mitigation (feature flag, rollback) plus a proper
+follow-up task.
 
 ## Phase 1 — Triage (5 minutes max)
 
@@ -156,13 +173,21 @@ npm run lint 2>/dev/null || true
 
 ## Phase 5 — Ship
 
-### 5.1 Commit
+### 5.1 ASK before committing
+
+Propose:
 ```bash
 git add [specific files only — never git add .]
 git commit -m "fix(scope): short description of what was broken and how it is fixed"
 ```
+Wait for explicit "go" before executing.
 
-### 5.2 PR (fast-track)
+### 5.2 ASK before opening PR (fast-track)
+
+For `prod` hotfixes, the ASK must include the proposed title and body.
+For `beta` / `dev` hotfixes, a single ASK to run the full `gh pr create`
+command is sufficient.
+
 ```bash
 gh pr create --title "hotfix: [short description]" --body "$(cat <<'EOF'
 ## Root Cause
