@@ -1,6 +1,6 @@
 ---
 name: task-compacting
-version: 1.0.0
+version: 1.1.0
 description: Use when .context8/tasks/ has accumulated many completed/cancelled tasks — archive old tasks and generate monthly summary documents for LLM-friendly historical overview.
 author: Hermes Agent
 license: MIT
@@ -9,6 +9,9 @@ metadata:
     tags: [tasks, maintenance, archiving, context8]
     related_skills: [task-do, task-plan, task-continue, task-review]
 ---
+
+> Posture: see `AGENTS.md` → `Posture & Conventions`. This skill follows the
+> global environment, MCP, commit, and questioning rules.
 
 # Task Compacting — Archive Old Tasks with Monthly Summaries
 
@@ -319,6 +322,20 @@ Skipped (too recent): 1
 Skipped (active):     1
 Skipped (no status):  0
 ```
+
+### 5.6 Group by environment
+
+For each monthly summary, after the per-task entries, append a section
+grouping tasks by `**Environment**` to surface trends:
+
+```markdown
+## Environment distribution
+- dev:  5 tasks
+- beta: 2 tasks
+- prod: 3 tasks   ← investigate if prod > 0 (hotfixes on prod are signals)
+```
+
+This helps detect operational risk patterns across months.
 
 ---
 

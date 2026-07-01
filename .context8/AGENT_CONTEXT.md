@@ -94,6 +94,20 @@ The hook (`hooks/context8_session_start.py`) runs at every agent startup.
 - **Skill format**: YAML frontmatter + Overview + When to use + Output + Full Prompt
 - **Branch naming**: `type/short-description`
 
+### Posture & Conventions (global, inherited by all skills)
+
+- **Environment permissions**: dev = free, beta = ASK per op, prod = explicit
+  written permission. See global config.
+- **No auto-commit**: agent drafts commits, never executes `git commit` without
+  the user's "go".
+- **No HH:MM in task files**: progress logs use `YYYY-MM-DD:` bullets only.
+- **Task file template** must include `**Environment**: dev | beta | prod`.
+- **Critical posture**: the agent questions, surfaces hidden costs, and proposes
+  alternatives before complying — it does not just say "yes".
+- **MCPs / plugins preferred**: caveman, ponytail, context-mode, code-review-graph,
+  superpowers, and the rest of the ecosystem take precedence over reinventing
+  equivalent logic.
+
 ## Configuration & Environment
 
 No hay variables de entorno. Toda la config esta en:
