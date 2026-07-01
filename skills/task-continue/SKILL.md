@@ -4,6 +4,9 @@ version: 1.0.0
 description: Resume a partially completed task — reloads state from task file, checks what's been done, and continues from the last incomplete phase
 ---
 
+> Posture: see `AGENTS.md` → `Posture & Conventions`. This skill follows the
+> global environment, MCP, commit, and questioning rules.
+
 # Task Continue — Resume Interrupted Work
 
 ## Overview
@@ -30,6 +33,16 @@ Loads the task file from `.context8/tasks/`, identifies the last completed and n
 ## Full Prompt
 
 ## Phase 1 — Find the Task
+
+### 1.0 Environment reminder
+
+Read the task file's `**Environment**` field. If `prod` or `beta`, show
+a brief reminder to the user before resuming:
+
+> Resuming in `<env>` mode — every non-read op will be ASKED per the
+> global Commit Policy.
+
+If the field is missing, ASK the user to fill it in before resuming.
 
 ### 1.1 Locate the task file
 ```bash
@@ -148,7 +161,7 @@ After resuming and making progress:
 
 ```markdown
 **Status**: In progress (resumed)
-**Resumed at**: YYYY-MM-DD HH:MM
+**Resumed at**: YYYY-MM-DD
 **Last session ended at**: [timestamp from task file or session end]
 **Phase progress**: [updated]
 **Notes**: 
