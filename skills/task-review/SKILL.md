@@ -1,8 +1,11 @@
 ---
 name: task-review
-version: 1.0.0
+version: 1.1.0
 description: Use after task-do completes and before opening a PR — reviews diff for correctness, security vulnerabilities, test coverage gaps, convention violations, and regressions
 ---
+
+> Posture: see `AGENTS.md` → `Posture & Conventions`. This skill follows the
+> global environment, MCP, commit, and questioning rules.
 
 # Task Review — Pre-PR Code Review
 
@@ -19,7 +22,7 @@ Pre-PR review prompt. Loads the diff and task file, then systematically checks: 
 - Hotfix path (time-critical) → security check is still mandatory inside `task-hotfix`
 
 ## Output
-- Review report (inline in session) with verdict: READY FOR PR or BLOCKED
+- Review report (inline in session) with verdict: READY TO PROPOSE PR or BLOCKED
 - Missing tests added
 - Task file updated with review outcome
 
@@ -30,6 +33,20 @@ Pre-PR review prompt. Loads the diff and task file, then systematically checks: 
 ## RULE: Run this after `task-do` completes, before opening a PR.
 
 Use this to catch issues before review from humans. Covers correctness, security, test coverage, conventions, and regressions.
+
+---
+
+## Phase 0 — Environment Check
+
+Identify the target environment of the PR. Strictness scales with it:
+
+| Target env | Review strictness |
+|------------|-------------------|
+| `dev`      | Lighter. Findings are advisory. |
+| `beta`     | Standard. Each finding must be addressed or explicitly waived. |
+| `prod`     | Strict. Every criterion is blocking. No waivers. |
+
+State the detected target env in the review report header.
 
 ---
 
@@ -74,7 +91,21 @@ If `WORKSPACE_CHILD`:
 - Verify that no changes cross into sibling repos (all changed files should be within this repo).
 - If any file in the diff belongs to a sibling repo, flag as **scope creep across workspace boundaries**.
 
-### 1.5 Load relevant context
+### 1.5 Code review graph consultation
+
+Before correctness review, query `.code-review-graph/graph.db`:
+
+```bash
+# List all callers of each modified symbol — keep the graph out of context
+sqlite3 .code-review-graph/graph.db "SELECT * FROM edges WHERE source IN (modified-files);"
+```
+
+Surface in the report:
+- All callers of each modified function/class.
+- Files NOT in the diff but transitively affected (per the graph).
+- Tests that exercise the changed code (per the graph's test edges).
+
+### 1.6 Load relevant context
 - `.context8/AGENT_CONTEXT.md` — conventions, patterns, gotchas.
 - Every file modified in this diff (read fully, not just the diff).
 
@@ -215,8 +246,21 @@ Write `.context8/reviews/${REVIEW_DATE}_<task-description>_review.md` with the t
 ### Questions
 [Open questions about unclear logic, design decisions, or anything that needs clarification from the team or task author. "None" if nothing.]
 
+### Target Environment
+`dev` | `beta` | `prod` (taken from the PR base/head branches or `**Environment**`
+in the task file). Strictness of the review scales with this.
+
+### Commit / Merge Plan
+Proposed sequence of actions to land this PR — listed, not executed:
+- `git add [files]`
+- `git commit -m "type(scope): description"`
+- (if PR) `gh pr create --title ... --body ...`
+- (if merge) `gh pr merge --squash` (or `--merge` / `--rebase`, your choice)
+
+The agent MUST NOT execute any of the above. The user runs them.
+
 ### Verdict
-READY FOR PR / BLOCKED: [reason]
+READY TO PROPOSE PR / BLOCKED: [reason]
 ```
 
 If verdict is BLOCKED: fix issues, re-run relevant phases, update report.
@@ -228,7 +272,7 @@ If verdict is BLOCKED: fix issues, re-run relevant phases, update report.
 - [ ] Diff reviewed fully (not just changed lines — full file context).
 - [ ] No security issues outstanding.
 - [ ] Test suite passes.
-- [ ] Review report written and verdict is READY FOR PR.
+- [ ] Review report written and verdict is READY TO PROPOSE PR.
 - [ ] Task file updated with review outcome.
 
 ---

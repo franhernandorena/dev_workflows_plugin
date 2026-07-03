@@ -6,6 +6,23 @@ Use this when you need a thorough plan before starting work — complex features
 
 ---
 
+## Phase 0 — Question First
+
+Before doing any planning work, the agent MUST:
+
+1. Restate the task in 2-3 sentences, in its own words, including:
+   - What is being asked.
+   - Why it matters.
+   - The target environment (`dev` / `beta` / `prod`).
+2. If the task is ambiguous, STOP here. Write the interpretation and ask
+   the user to confirm or correct it. Do not proceed to planning.
+3. If the user has not stated the environment, ASK.
+
+This step exists because plans based on silent assumptions are the most
+common cause of wasted implementation work.
+
+---
+
 ## Phase 1 — Load Context
 
 Read in this exact order. Do not skip.
@@ -39,6 +56,15 @@ If the task is ambiguous, stop here. Write your interpretation and ask for confi
 ## Phase 3 — Codebase Reconnaissance
 
 Run targeted exploration relevant to this specific task. Only read what is needed.
+
+### 3.0 Consult the code-review-graph (preferred over grep for callers/imports)
+
+```bash
+# Use ctx_execute to keep the graph out of conversation memory
+sqlite3 .code-review-graph/graph.db "SELECT name FROM sqlite_master WHERE type='table';"
+# Then for each primary file: list its callers and importers from the graph
+```
+If the graph is missing or stale, fall back to `grep` per 3.1.
 
 ### 3.1 Find affected files
 ```bash
@@ -114,6 +140,7 @@ Use this structure:
 
 **Date**: YYYY-MM-DD
 **Status**: Planned
+**Environment**: dev | beta | prod
 **Branch**: [branch name — create if needed: type/short-description]
 **Estimated total complexity**: trivial | small | medium | large | XL
 

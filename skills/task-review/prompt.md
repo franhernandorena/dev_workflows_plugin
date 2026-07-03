@@ -6,6 +6,20 @@ Use this to catch issues before review from humans. Covers correctness, security
 
 ---
 
+## Phase 0 — Environment Check
+
+Identify the target environment of the PR. Strictness scales with it:
+
+| Target env | Review strictness |
+|------------|-------------------|
+| `dev`      | Lighter. Findings are advisory. |
+| `beta`     | Standard. Each finding must be addressed or explicitly waived. |
+| `prod`     | Strict. Every criterion is blocking. No waivers. |
+
+State the detected target env in the review report header.
+
+---
+
 ## Phase 1 — Load Task & Diff
 
 ### 1.1 Identify what changed
@@ -25,7 +39,21 @@ Verify:
 - All acceptance criteria are checked off.
 - All modified files are listed.
 
-### 1.3 Load relevant context
+### 1.3 Code review graph consultation
+
+Before correctness review, query `.code-review-graph/graph.db`:
+
+```bash
+# List all callers of each modified symbol — keep the graph out of context
+sqlite3 .code-review-graph/graph.db "SELECT * FROM edges WHERE source IN (modified-files);"
+```
+
+Surface in the report:
+- All callers of each modified function/class.
+- Files NOT in the diff but transitively affected (per the graph).
+- Tests that exercise the changed code (per the graph's test edges).
+
+### 1.4 Load relevant context
 - `.context8/AGENT_CONTEXT.md` — conventions, patterns, gotchas.
 - Every file modified in this diff (read fully, not just the diff).
 
@@ -150,8 +178,21 @@ Produce a structured report before opening the PR:
 - [ ] Callers checked
 - Issues found: [list or "none"]
 
+### Target Environment
+`dev` | `beta` | `prod` (taken from the PR base/head branches or `**Environment**`
+in the task file). Strictness of the review scales with this.
+
+### Commit / Merge Plan
+Proposed sequence of actions to land this PR — listed, not executed:
+- `git add [files]`
+- `git commit -m "type(scope): description"`
+- (if PR) `gh pr create --title ... --body ...`
+- (if merge) `gh pr merge --squash` (or `--merge` / `--rebase`, your choice)
+
+The agent MUST NOT execute any of the above. The user runs them.
+
 ### Verdict
-READY FOR PR / BLOCKED: [reason]
+READY TO PROPOSE PR / BLOCKED: [reason]
 ```
 
 If verdict is BLOCKED: fix issues, re-run relevant phases, update report.
@@ -163,7 +204,7 @@ If verdict is BLOCKED: fix issues, re-run relevant phases, update report.
 - [ ] Diff reviewed fully (not just changed lines — full file context).
 - [ ] No security issues outstanding.
 - [ ] Test suite passes.
-- [ ] Review report written and verdict is READY FOR PR.
+- [ ] Review report written and verdict is READY TO PROPOSE PR.
 - [ ] Task file updated with review outcome.
 
 ---

@@ -287,6 +287,24 @@ agents_prompts/
 
 ---
 
+## Posture & Conventions
+
+The plugin ships with a global `Posture & Conventions` section that every
+agent inherits after installation. The full text is in `AGENTS.md` /
+`CLAUDE.md` / `GEMINI.md`. Highlights:
+
+- **Environments** — `dev` (free), `beta` (ASK per op), `prod` (explicit
+  written permission required for every action).
+- **No auto-commit** — the agent drafts commit messages but always ASKS
+  before executing `git commit`.
+- **No timestamps in task files** — progress logs use `YYYY-MM-DD:` bullets,
+  never `[HH:MM]`.
+- **Critical posture** — the agent is expected to question, surface hidden
+  costs, and propose alternatives before complying.
+- **Use the ecosystem** — prefer `caveman`, `ponytail`, `context-mode`,
+  `code-review-graph`, `superpowers`, and the other installed plugins /
+  MCPs when the task fits.
+
 ## Rules
 
 - Every skill enforces phases. Do not skip phases, even for "simple" tasks.
