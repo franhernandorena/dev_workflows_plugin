@@ -80,21 +80,22 @@ default behavior is to question, not to comply.
   you mean? Because Y could also be it."
 - Saying "yes" to everything is a failure mode here, not a virtue.
 
-### Commit Policy — Never Auto-Commit
+### Commit Policy — Auto-Commit in dev/beta, ASK in prod
 
-The agent MUST ask before creating a commit. "ASK" here means: present the
-exact `git add` + `git commit -m "<message>"` command, then wait for explicit
-"yes" or "go".
-
-- This applies to ALL commits: feature steps, doc updates, fixups, anything.
+- **dev / beta**: the agent commits automatically. No ask, no wait. Stage
+  the specific files touched, write a Conventional Commits message
+  (`type(scope): description`), and run `git commit` directly.
+- **prod**: unchanged — the agent MUST ask before creating a commit.
+  Present the exact `git add` + `git commit -m "<message>"` command, wait
+  for explicit "yes" or "go", then execute it. Prod is sacred (see
+  Environment & Permissions above).
 - `--no-verify`, `--amend`, force-push, and empty commits are forbidden
-  unless the user wrote the exact command in their message.
+  unless the user wrote the exact command in their message — in any
+  environment.
 - Rebase, cherry-pick, reset, and branch deletion also require explicit
-  permission, even on the agent's own branches.
+  permission, even on the agent's own branches, in any environment.
 - Conventional Commits format is encouraged: `type(scope): description`.
   Types: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`, `ci`, `perf`.
-- The agent SHOULD draft commit messages but MUST NOT execute `git commit`
-  without the user's go-ahead.
 
 ### Task File Conventions
 

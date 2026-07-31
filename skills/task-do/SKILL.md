@@ -43,9 +43,9 @@ user to provide it. Then obey the matrix:
 
 | Environment | Rule |
 |-------------|------|
-| `dev`       | Proceed. ASK before each commit (global rule). |
-| `beta`      | Proceed. Restate the ASK-per-op rule before any non-read action. |
-| `prod`      | Do not start Phase 1. Surface the task, get explicit written permission. |
+| `dev`       | Proceed. Auto-commit each step (global rule). |
+| `beta`      | Proceed. Auto-commit each step (global rule). |
+| `prod`      | Do not start Phase 1. Surface the task, get explicit written permission. ASK before each commit. |
 
 `prod` is sacred. Even if the task file says `prod`, the agent must still
 get a fresh "go" from the user before touching shared state.
@@ -183,17 +183,14 @@ For each step:
 3. **Verify** using the step's "how to verify" check.
 4. **Log** in the task file:
    - `- YYYY-MM-DD: Step N complete. [One-line summary of what changed.]`
-5. **ASK the user before committing.** Present the exact command, then
-   wait for "go":
+5. **Commit.** In `dev`/`beta`, auto-commit — no ask:
+   ```bash
+   git add [specific files]
+   git commit -m "type(scope): short description"
    ```
-   Proposed: git add [specific files] && git commit -m "type(scope): short description"
-   Proceed? (yes/no)
-   ```
-   Do NOT execute `git commit` without explicit consent. See global
-   `Commit Policy` in `AGENTS.md`. **Once the user replies "yes" or "go",
-   execute the exact command shown** (`git add [specific files] && git
-   commit -m "..."`) and log the resulting commit hash in the task file.
-   If the user declines or edits the message, use their version instead.
+   In `prod`, ASK first: present the exact command, wait for explicit
+   "yes"/"go", then execute it. See global `Commit Policy` in `CLAUDE.md`.
+   Log the resulting commit hash in the task file.
 6. **Validate against the code-review-graph** (non-blocking by default):
    ```bash
    sqlite3 .code-review-graph/graph.db "SELECT * FROM edges WHERE source IN ([files-changed]);"
@@ -330,15 +327,14 @@ If a criterion cannot be checked off, do NOT mark the task complete.
 - New/changed env vars → update `.context8/architecture/infrastructure.md`
 - Significant persistent change → update `.context8/AGENT_CONTEXT.md`
 
-### 5.3 ASK before final commit
-Propose:
+### 5.3 Final commit
+In `dev`/`beta`, auto-commit — no ask:
+```bash
+git add [all relevant files]
+git commit -m "type(scope): short description"
 ```
-Proposed: git add [all relevant files] && git commit -m "type(scope): short description"
-Proceed? (yes/no)
-```
-Do NOT execute without explicit "yes" or "go". **Once given, execute the
-proposed `git add` + `git commit` command** (or the user's edited version)
-and confirm the commit hash back to the user.
+In `prod`, ASK first: present the exact command, wait for explicit
+"yes"/"go", then execute it.
 
 ### 5.4 ASK before opening PR
 
