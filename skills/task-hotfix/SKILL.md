@@ -180,7 +180,9 @@ Propose:
 git add [specific files only — never git add .]
 git commit -m "fix(scope): short description of what was broken and how it is fixed"
 ```
-Wait for explicit "go" before executing.
+Wait for explicit "go" before executing. **Once given, run the proposed
+commands** (or the user's edited message) and confirm the commit hash back
+to the user.
 
 ### 5.2 ASK before opening PR (fast-track)
 

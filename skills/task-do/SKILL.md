@@ -190,7 +190,10 @@ For each step:
    Proceed? (yes/no)
    ```
    Do NOT execute `git commit` without explicit consent. See global
-   `Commit Policy` in `AGENTS.md`.
+   `Commit Policy` in `AGENTS.md`. **Once the user replies "yes" or "go",
+   execute the exact command shown** (`git add [specific files] && git
+   commit -m "..."`) and log the resulting commit hash in the task file.
+   If the user declines or edits the message, use their version instead.
 6. **Validate against the code-review-graph** (non-blocking by default):
    ```bash
    sqlite3 .code-review-graph/graph.db "SELECT * FROM edges WHERE source IN ([files-changed]);"
@@ -333,7 +336,9 @@ Propose:
 Proposed: git add [all relevant files] && git commit -m "type(scope): short description"
 Proceed? (yes/no)
 ```
-Do NOT execute without explicit "yes" or "go".
+Do NOT execute without explicit "yes" or "go". **Once given, execute the
+proposed `git add` + `git commit` command** (or the user's edited version)
+and confirm the commit hash back to the user.
 
 ### 5.4 ASK before opening PR
 
