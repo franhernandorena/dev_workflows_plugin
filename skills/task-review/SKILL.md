@@ -111,6 +111,14 @@ Surface in the report:
 
 ---
 
+### 1.7 Route the review to the team
+
+If `.context8/TEAM.md` exists, dispatch the review by domain: correctness and
+test pass → qa-agent; security pass → security-agent; infra changes →
+devops-agent. Each specialist reviews its domain as a subagent with the diff
+and returns findings; you consolidate the report. If no team exists, review
+directly.
+
 ## Phase 2 — Correctness Review
 
 For every changed file, answer:

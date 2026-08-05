@@ -129,6 +129,10 @@ NOT include timestamps. The progress log uses date + bullet, not `[HH:MM]`.
 - `dev-workflows:project-audit` — assess a project with no or stale documentation
 - `dev-workflows:project-review` — full project health check before milestones
 
+### Team (specialized agents)
+- `dev-workflows:team-setup` — analyze a project / workflow / set of projects and create the specialized agent team (TEAM.md registry + native agent files)
+- `dev-workflows:create-research-agent` — generate a professional Research specialist agent
+
 ### Tasks
 - `dev-workflows:task-plan` — produce a detailed implementation plan (follows global Posture)
 - `dev-workflows:task-do` — execute a planned task step by step (follows global Posture)

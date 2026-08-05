@@ -54,6 +54,8 @@ SKILLS = [
     ("pr-description",     "Generate a structured PR description from the current diff", "dev-workflows"),
     ("deploy-plan",        "Plan a deployment with steps, rollback, and verification", "dev-workflows"),
     ("create-mobile-agent", "Generate a professional Mobile Developer agent prompt",  "dev-workflows"),
+    ("create-research-agent", "Generate a professional Research specialist agent prompt", "dev-workflows"),
+    ("team-setup",        "Analyze a project/workspace and create the specialized agent team", "dev-workflows"),
     ("project-review",   "Full project architecture, security, and quality review",          "dev-workflows"),
     ("dependency-audit", "Auditoría de dependencias: vulnerabilidades y versiones",          "dev-workflows"),
     ("release",          "End-to-end release workflow: tag, changelog, publish",              "dev-workflows"),

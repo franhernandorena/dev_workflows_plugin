@@ -469,6 +469,20 @@ After all child repos are bootstrapped, update the root `.context8/README.md`:
 
 ---
 
+## Phase 5 — Team Setup (Specialized Agents)
+
+A team of specialized agents makes every later session granular: research,
+planning, implementation, and review are dispatched to specialists instead of
+being done by the orchestrator alone.
+
+1. Check for an existing team at the root: `ls .context8/TEAM.md`.
+2. If missing → run `team-setup` (workspace scope). It analyzes the workspace,
+   creates the needed agent files in the native format of your tool (per repo,
+   e.g. `.opencode/agents/backend-agent.md`), and writes the root
+   `.context8/TEAM.md` registry with the Routing Map.
+3. If the user declines a team, note it in `WORKSPACE_OVERVIEW.md` so
+   `workflow-continue` does not re-ask every session.
+
 ## Completion Checklist
 
 - [ ] All child repos identified in Phase 1

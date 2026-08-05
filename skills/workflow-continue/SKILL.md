@@ -83,6 +83,21 @@ Read in this order. Skip files you already have in context.
 
 If `.context8/` does not exist: stop and run `workflow-init` first.
 
+### 2.1 Team check — specialized agents
+
+Check whether the workspace has a team:
+
+```bash
+ls .context8/TEAM.md 2>/dev/null && echo "TEAM_EXISTS" || echo "NO_TEAM"
+```
+
+- **TEAM_EXISTS** → read TEAM.md. Use its **Routing Map** to dispatch the
+  resumed work to the matching specialist (research → research-agent,
+  backend → backend-agent, tests → qa-agent, …) as a subagent with a focused,
+  self-contained task; you remain the orchestrator that reviews and integrates.
+- **NO_TEAM** → run `team-setup` before resuming (or surface to the user that
+  the team is missing and continue without it if they prefer).
+
 ---
 
 ## Phase 3 — Resume Task

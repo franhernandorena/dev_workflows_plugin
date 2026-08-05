@@ -72,6 +72,14 @@ Task file status: `**Status**: In progress (hotfix)`
 
 ---
 
+### 1.1 Team routing
+
+If `.context8/TEAM.md` exists, route the fix to the specialist of the failing
+domain (backend → backend-agent, frontend → frontend-agent, …) as a subagent
+with the reproduction steps and triage context; verify its fix yourself before
+shipping. Urgency first: if dispatching would slow the fix, do it directly and
+note it in the task file.
+
 ## Phase 2 — Locate the Bug
 
 ### 2.1 Check recent changes

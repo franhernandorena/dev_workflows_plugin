@@ -90,6 +90,21 @@ git diff --cached --name-only
 ```
 Read any modified files before touching them.
 
+### 1.5 Team check — specialized agents
+
+Check whether the project has a team:
+
+```bash
+ls .context8/TEAM.md 2>/dev/null && echo "TEAM_EXISTS" || echo "NO_TEAM"
+```
+
+- **TEAM_EXISTS** → read TEAM.md. Use its **Routing Map** to dispatch work to
+  the matching specialist (research → research-agent, backend → backend-agent,
+  frontend → frontend-agent, tests → qa-agent, …) as a subagent with a focused,
+  self-contained task; you remain the orchestrator that reviews and integrates.
+- **NO_TEAM** → run `team-setup` (or surface to the user that the team is
+  missing and continue without it if they prefer).
+
 ---
 
 ## Phase 2 — Load Project Context
