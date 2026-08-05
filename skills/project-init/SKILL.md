@@ -422,6 +422,16 @@ as the system prompt and `.context8/AGENT_CONTEXT.md` as the primary reference.
 
 ---
 
+## Phase 6 — Team Setup (Specialized Agents)
+
+1. Check for an existing team: `ls .context8/TEAM.md`.
+2. If missing → offer to run `team-setup` (single-project scope): it analyzes
+   the project, creates the specialized agent files in the native format of
+   your tool (e.g. `.opencode/agents/backend-agent.md`), and writes
+   `.context8/TEAM.md` with the Routing Map.
+3. If the user declines, note it in `AGENT_CONTEXT.md` so `project-continue`
+   does not re-ask every session.
+
 ## Completion Checklist
 
 Before considering this task done, verify:

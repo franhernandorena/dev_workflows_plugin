@@ -90,6 +90,13 @@ See [Session-Start Hook](#session-start-hook) for details.
 | `create-devops-agent` | `/dev-workflows:create-devops-agent` | Need a DevOps/SRE agent prompt |
 | `create-security-agent` | `/dev-workflows:create-security-agent` | Need a security engineer agent prompt |
 | `create-mobile-agent` | `/dev-workflows:create-mobile-agent` | Need a mobile developer agent prompt (iOS, Android, React Native, Flutter) |
+| `create-research-agent` | `/dev-workflows:create-research-agent` | Need a research/analysis specialist agent prompt |
+
+### Team Setup
+
+| Skill | Invoke | When to use |
+|-------|--------|-------------|
+| `team-setup` | `/dev-workflows:team-setup` | Analyze a project, workflow, or set of projects and create the full specialized agent team (TEAM.md + native agent files) |
 
 ---
 

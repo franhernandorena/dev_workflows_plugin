@@ -176,6 +176,13 @@ Record result in the progress log: `- YYYY-MM-DD: Baseline: X tests passed, Y fa
 
 Work through the **Implementation Plan** in the task file step by step.
 
+**Team routing**: if `.context8/TEAM.md` exists, dispatch each step to the
+matching specialist from its Routing Map (backend → backend-agent, frontend →
+frontend-agent, tests → qa-agent, …) as a subagent. Give the specialist the
+step spec, the files involved, and the expected output; review its result,
+integrate, and continue as orchestrator. If TEAM.md is missing, surface it to
+the user (optionally run `team-setup`).
+
 For each step:
 
 1. **Read** every file the step will modify (if not already in context this session).

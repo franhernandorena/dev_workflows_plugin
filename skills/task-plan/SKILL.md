@@ -89,6 +89,22 @@ Read the parent WORKSPACE_OVERVIEW.md for sibling context (high-level: what othe
 
 ---
 
+### 1.2 Consult the team
+
+Check if the project has a specialized team:
+
+```bash
+ls .context8/TEAM.md 2>/dev/null && echo "TEAM_EXISTS" || echo "NO_TEAM"
+```
+
+- **TEAM_EXISTS** → read TEAM.md. Route the *research* and *architecture*
+  phases of this plan to the matching specialists (research-agent,
+  architect-agent) as subagents, and note in each plan step which role will
+  execute it (backend → backend-agent, frontend → frontend-agent, tests →
+  qa-agent, …).
+- **NO_TEAM** → mention it to the user; optionally run `team-setup` before
+  planning.
+
 ## Phase 2 — Understand the Task
 
 Before planning anything, answer these questions in writing (they become sections in the task file):

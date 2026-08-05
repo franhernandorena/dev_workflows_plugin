@@ -127,6 +127,17 @@ Note: if tests are red, were they red before the task started? If not, something
 
 ---
 
+### 3.5 Team check
+
+```bash
+ls .context8/TEAM.md 2>/dev/null && echo "TEAM_EXISTS" || echo "NO_TEAM"
+```
+
+If a team exists, resume through it: dispatch the next phase to the matching
+specialist from the Routing Map (research → research-agent, implementation →
+backend/frontend-agent, tests → qa-agent) as a subagent, then review and
+integrate its result. If not, mention it to the user.
+
 ## Phase 4 — Continue from Next Phase
 
 Find the phase planner in the task file:
