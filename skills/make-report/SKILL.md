@@ -1,6 +1,6 @@
 ---
 name: make-report
-version: 1.0.0
+version: 1.1.0
 description: Generates structured markdown reports optimized for ClickUp Docs — teaches the model how to structure documents, what questions to ask, and which formatting elements (tables, diagrams, content blocks) ClickUp supports natively
 category: document
 ---
@@ -72,9 +72,9 @@ ClickUp Docs support **nested pages** (parent → child hierarchy). Structure yo
 
 <!-- ClickUp auto-generates a sticky TOC from headings when you use /toc -->
 
-## 1. Executive Summary
+## 1. TL;DR — Executive Summary
 
-[2-4 sentences: what, why, who]
+[Summary of the report's conclusion. Written LAST, placed FIRST. See Phase 5.]
 
 ## 2. Context / Background
 
@@ -262,6 +262,30 @@ Since the AI generates text, not images:
 
 ## Phase 5 — Writing Guidelines for ClickUp Docs
 
+### Executive Summary (TL;DR) — summary of the conclusion, placed FIRST
+
+The report opens with a small executive summary so a PM or stakeholder can
+grasp everything without reading the rest. Rules:
+
+- **It is a summary of the report's conclusion**: what was done, what was
+  found, the key decisions, and what's next. Write the body and the
+  conclusion first, then condense that conclusion here.
+- **As small as the content allows**: no filler, no "This report
+  summarizes…", no repeated background. Every line must carry a fact, a
+  number, or a decision. There is **no fixed bullet limit** — use as many as
+  the conclusion genuinely needs, but make it the shortest faithful version.
+- **Stand alone**: the reader who reads ONLY this understands the whole
+  report. No "see below" or section-number references.
+- **Include the numbers that matter**: key metrics, decisions, blockers.
+- **Tone**: neutral, factual, present tense.
+
+Example:
+
+> **TL;DR**
+> - Migración a Vite completada: build 3.2× más rápido (18s → 5.6s).
+> - 2 bugs críticos de auth encontrados y fixeados; cobertura de tests 71% → 84%.
+> - Próximo: QA de regresión en staging + release a prod el 2026-08-10.
+
 ### Content organization
 
 - **Start with the TOC**: ClickUp auto-generates a sticky TOC from H1-H4. Place `<!-- TOC will go here -->` and remind the user to use `/toc`.
@@ -307,9 +331,12 @@ Generate the final document using this template. **Always include paste notes** 
 
 ---
 
-## 1. Executive Summary
+## 1. TL;DR — Executive Summary
 
-[2-4 sentences]
+> **TL;DR**
+> - [Conclusion point 1 — with the key number]
+> - [Conclusion point 2]
+> - [Conclusion point 3 — as many as the conclusion needs; no fixed limit; written LAST]
 
 ## 2. Context
 
@@ -343,6 +370,7 @@ Generate the final document using this template. **Always include paste notes** 
 Before delivering the document:
 
 - [ ] Audience and purpose confirmed (Phase 0 questions)
+- [ ] TL;DR at the top: summary of the conclusion, written LAST, stands alone
 - [ ] Only ClickUp-supported markdown elements used (no HTML, no Mermaid-as-code, no footnotes)
 - [ ] Tables are GFM-standard with header row separator
 - [ ] Any Mermaid/ASCII diagrams include a paste note for ClickUp
