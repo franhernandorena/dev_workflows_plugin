@@ -72,10 +72,14 @@ log --oneline -5`, `rtk npm test`) for 60-90% savings; check savings with
 `rtk gain`. If `rtk gain` fails, the Rust Type Kit binary is installed instead
 — verify with `which rtk`. For compressed communication use `caveman`
 (`caveman-commit` for commit messages, `caveman-review` for review feedback,
-`caveman-stats` to report savings).
+`caveman-stats` to report savings, `/caveman ultra` for extreme compression,
+`/caveman-compress <file>` to compress CLAUDE.md / memory files into
+caveman-speak — original kept as `<file>.original.md`).
 
-**Large output / agent handoffs** → `ponytail` (tail long outputs, structured
-agent-to-agent handoffs).
+**Simplest solution (always active)** → `ponytail` — the laziest solution
+that actually works: stdlib first, one line before fifty. Modes:
+`/ponytail lite|full|ultra` (default full; ultra = YAGNI extremista, deletion
+before addition). Also used for structured agent-to-agent handoffs.
 
 **Large data in/out of context** → `context-mode` (`ctx_*`): `ctx_batch_execute`
 for parallel commands, `ctx_search` for KB queries, `ctx_execute_file` for
@@ -83,8 +87,9 @@ file analysis. Only stdout enters conversation memory.
 
 **Code context & blast radius** → `code-review-graph` (SQLite at
 `.code-review-graph/graph.db`; query callers, deps, impact — see
-`change-impact`, `task-review`), `token-savior` (symbol-level codebase
-analysis), `context7` (up-to-date library docs).
+`change-impact`, `task-review`), `token-savior` (MCP: symbol-level codebase
+analysis — entry points, dead code, impacted tests, checkpoints),
+`context7` (MCP: up-to-date library docs for any package).
 
 **Web / scraping / browser** → `playwright`, `agent-browser`,
 `web-scraping`, `ecommerce-scraping` when the task fits.
@@ -100,8 +105,12 @@ TEAM.md), `github-code-review`, `requesting-code-review`,
 `receiving-code-review`, `finishing-a-development-branch` when implementation
 is complete and tests pass.
 
-**MCP servers installed** — use when the task fits: context7, code-review-graph,
-token-savior, n8n, blender.
+**MCP servers installed** — use when the task fits:
+- `context7` — up-to-date library docs for any package
+- `token-savior` — symbol-level codebase analysis (entry points, dead code, impacted tests, checkpoints)
+- `code-review-graph` — knowledge graph of the codebase (blast radius, callers, dependents)
+- `n8n` — workflow automation (data tables, executions, credentials)
+- `blender` — 3D asset generation and scene operations
 
 ### Critical Posture — Question, Don't Just Do
 
