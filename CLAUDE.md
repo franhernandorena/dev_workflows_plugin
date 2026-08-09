@@ -42,24 +42,66 @@ Definitions:
 
 ### Available Tools — Use Them by Default
 
-The plugin lives inside an ecosystem. The agent SHOULD prefer these tools
-when applicable. Do not reinvent what they already do.
+The plugin lives inside an ecosystem. These are DEFAULT behaviors: when the
+trigger applies, use the tool — do not reinvent what it already does.
 
-- **caveman** — compressed communication when output is large or requested.
-  Use `caveman-commit` for commit messages, `caveman-review` for review
-  feedback, `caveman-stats` to report token savings.
-- **ponytail** — tail long outputs, structured agent-to-agent handoffs.
-- **context-mode (`ctx_*`)** — gather & process large data OUT of conversation
-  memory. Use `ctx_batch_execute` for parallel commands, `ctx_search` for
-  knowledge-base queries, `ctx_execute_file` for file analysis.
-- **code-review-graph** — auto-updated SQLite at `.code-review-graph/graph.db`.
-  Updated on every Edit/Write/Bash. Query it for blast radius, callers, deps.
-  See skills `change-impact`, `task-review` for usage patterns.
-- **superpowers** — invoke `brainstorming` before any creative work, `TDD` for
-  implementations, `systematic-debugging` for bugs,
-  `verification-before-completion` before claiming "done".
-- **context7, playwright, token-savior, code-simplifier, feature-dev,
-  frontend-design, claude-mem, claude-md-management** — use when the task fits.
+**Creative / feature work** → `brainstorming` (superpowers). MANDATORY before
+creating features, building components, or modifying behavior. Explores
+intent, proposes 2-3 approaches, gets design approval (hard gate: no
+implementation before approval), writes the spec to
+`docs/superpowers/specs/`, then transitions to `writing-plans`.
+
+**Parallel work (2+ independent tasks)** → `dispatching-parallel-agents`.
+Dispatch one agent per independent domain, concurrently. If the project has a
+team (`.context8/TEAM.md`), dispatch to the matching specialists from its
+Routing Map (research → research-agent, backend → backend-agent, tests →
+qa-agent, …). Each agent gets a focused, self-contained task; the orchestrator
+reviews and integrates.
+
+**Planning & implementation** → `task-plan` / `writing-plans` after the design,
+`test-driven-development` (RED-GREEN-REFACTOR) for new code, `executing-plans`
+to run a written plan step by step, `spike` for throwaway experiments,
+`verification-before-completion` before claiming anything is done.
+
+**Bugs** → `systematic-debugging` — 4-phase root-cause: understand the bug
+before fixing it. Never patch blindly.
+
+**Token optimization (default)** → `rtk` (installed at `~/.local/bin/rtk`).
+Prefix token-heavy shell commands with `rtk` (e.g. `rtk git status`, `rtk git
+log --oneline -5`, `rtk npm test`) for 60-90% savings; check savings with
+`rtk gain`. If `rtk gain` fails, the Rust Type Kit binary is installed instead
+— verify with `which rtk`. For compressed communication use `caveman`
+(`caveman-commit` for commit messages, `caveman-review` for review feedback,
+`caveman-stats` to report savings).
+
+**Large output / agent handoffs** → `ponytail` (tail long outputs, structured
+agent-to-agent handoffs).
+
+**Large data in/out of context** → `context-mode` (`ctx_*`): `ctx_batch_execute`
+for parallel commands, `ctx_search` for KB queries, `ctx_execute_file` for
+file analysis. Only stdout enters conversation memory.
+
+**Code context & blast radius** → `code-review-graph` (SQLite at
+`.code-review-graph/graph.db`; query callers, deps, impact — see
+`change-impact`, `task-review`), `token-savior` (symbol-level codebase
+analysis), `context7` (up-to-date library docs).
+
+**Web / scraping / browser** → `playwright`, `agent-browser`,
+`web-scraping`, `ecommerce-scraping` when the task fits.
+
+**Frontend design** → `frontend-design` + `impeccable` (MANDATORY for all
+frontend work), `popular-web-designs` for reference systems.
+
+**Reports & docs** → `make-report` (ClickUp-optimized, TL;DR first),
+`writing-skills` for skill authoring, `claude-md-improver` for CLAUDE.md files.
+
+**Code review** → `task-review` (pre-PR; routes to team specialists via
+TEAM.md), `github-code-review`, `requesting-code-review`,
+`receiving-code-review`, `finishing-a-development-branch` when implementation
+is complete and tests pass.
+
+**MCP servers installed** — use when the task fits: context7, code-review-graph,
+token-savior, n8n, blender.
 
 ### Critical Posture — Question, Don't Just Do
 

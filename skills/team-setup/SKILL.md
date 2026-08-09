@@ -143,6 +143,7 @@ Then write `.context8/TEAM.md` (at workspace root if scope is a workflow/set of 
 - `project-continue` / `workflow-continue`: if this file is missing → run team-setup.
 - `task-plan`: routes research and architecture work to the specialists.
 - `task-do`: dispatches each step to the matching specialist; the orchestrator reviews and integrates.
+- Parallel work: `dispatching-parallel-agents` — one specialist per independent domain, concurrently.
 - `task-review`: routes the review to qa-agent / security-agent.
 ```
 
