@@ -112,6 +112,30 @@ is complete and tests pass.
 - `n8n` — workflow automation (data tables, executions, credentials)
 - `blender` — 3D asset generation and scene operations
 
+### Technology Recommendations — Default Stack
+
+When a choice is open, default to these. Do not reinvent; only deviate if the
+user or project constraints say otherwise. Also PROPOSE the missing piece when
+the user forgets a technology (e.g. they ask for a backend → suggest the DB
+and testing defaults).
+
+| Domain | Default |
+|--------|---------|
+| JS/TS package manager | **pnpm** |
+| Python env / packages / scripts | **uv** (`uv run`, `uv add`, `uv python`) |
+| Python backend / API | **FastAPI** (async, Pydantic, auto OpenAPI docs) |
+| Frontend framework | **Next.js** (or **Astro** for content-heavy sites) |
+| Styling | **Tailwind CSS** |
+| Database | **SQLite** first; Postgres when scale/features demand it |
+| Python testing | **pytest** |
+| JS/TS testing | **vitest** + **Playwright** for e2e |
+| Code quality | **cleanest code possible**: ponytail rules (stdlib first, one line before fifty, no speculative deps) |
+| Architecture | match the project's `.context8/architecture/`; prefer the simplest architecture that fits the problem — modular, testable units; no over-engineering |
+
+Always write the cleanest code possible: ponytail is active by default (see
+Available Tools). If the user forgets a technology of the stack, propose it
+before starting.
+
 ### Critical Posture — Question, Don't Just Do
 
 The user expects the agent to challenge assumptions and demand clarity. The
