@@ -101,6 +101,7 @@ TOOLS = [
         "files_per_skill": ["SKILL.md", "prompt.md"],
         "global_label": "~/.claude/skills/",
         "project_label": ".claude/skills/",
+        "global_context": Path.home() / ".claude" / "CLAUDE.md",
     },
     {
         "id": "codex",
@@ -112,6 +113,7 @@ TOOLS = [
         "files_per_skill": ["SKILL.md", "prompt.md"],
         "global_label": "~/.agents/skills/",
         "project_label": ".agents/skills/",
+        "global_context": Path.home() / ".codex" / "AGENTS.md",
     },
     {
         "id": "cursor",
@@ -123,6 +125,8 @@ TOOLS = [
         "files_per_skill": ["SKILL.md", "prompt.md"],
         "global_label": "~/.cursor/skills/",
         "project_label": ".cursor/skills/",
+        "global_context": Path.home() / ".cursor" / "rules" / "global_rules.md",
+        "global_context_prefix": "---\ndescription: Dev Workflows plugin global rules\nalwaysApply: true\n---\n",
     },
     {
         "id": "gemini",
@@ -134,6 +138,7 @@ TOOLS = [
         "files_per_skill": ["SKILL.md"],
         "global_label": "~/.gemini/skills/",
         "project_label": ".agents/skills/",
+        "global_context": Path.home() / ".gemini" / "GEMINI.md",
     },
     {
         "id": "opencode",
@@ -319,6 +324,58 @@ def remove_hook_fallback_block(ctx_dest: Path, dry: bool) -> tuple[bool, str]:
     return True, "removed fallback block"
 
 
+# ─── Plugin context injection ────────────────────────────────────────────────
+
+PLUGIN_CTX_START = "<!-- dev-workflows-plugin-context-start -->"
+PLUGIN_CTX_END = "<!-- dev-workflows-plugin-context-end -->"
+
+def plugin_context_block(prefix: str = "") -> str:
+    """Full plugin CLAUDE.md (posture, tools, tech recommendations) wrapped in
+    managed markers. Optional prefix (e.g. Cursor rule frontmatter)."""
+    content = get_context_file("AGENTS.md")  # reads CLAUDE.md from the repo
+    return f"{PLUGIN_CTX_START}\n{prefix}{content}\n{PLUGIN_CTX_END}"
+
+def inject_plugin_context(dest: Path, dry: bool, prefix: str = "") -> tuple[str, str]:
+    """Inject or update the managed plugin context block into a global context file.
+    Returns (action, detail)."""
+    block = plugin_context_block(prefix)
+
+    if not dest.exists():
+        if not dry:
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            dest.write_text(block + "\n", encoding="utf-8")
+        return "created", "plugin context block"
+
+    content = dest.read_text(encoding="utf-8")
+    if PLUGIN_CTX_START in content and PLUGIN_CTX_END in content:
+        s = content.index(PLUGIN_CTX_START)
+        e = content.index(PLUGIN_CTX_END) + len(PLUGIN_CTX_END)
+        new_content = content[:s] + block + content[e:]
+        action = "updated"
+    else:
+        new_content = content.rstrip() + "\n\n" + block + "\n"
+        action = "created"
+
+    if not dry:
+        shutil.copy2(dest, backup_path(dest))
+        dest.write_text(new_content, encoding="utf-8")
+    return action, "plugin context block"
+
+def remove_plugin_context(dest: Path, dry: bool) -> tuple[bool, str]:
+    """Remove the managed plugin context block. Returns (removed, detail)."""
+    if not dest.exists():
+        return False, "not found"
+    content = dest.read_text(encoding="utf-8")
+    if PLUGIN_CTX_START not in content or PLUGIN_CTX_END not in content:
+        return False, "no plugin context block found"
+    s = content.index(PLUGIN_CTX_START)
+    e = content.index(PLUGIN_CTX_END) + len(PLUGIN_CTX_END)
+    new_content = content[:s] + content[e:]
+    if not dry:
+        shutil.copy2(dest, backup_path(dest))
+        dest.write_text(new_content, encoding="utf-8")
+    return True, "removed plugin context block"
+
 # ─── Source detection ─────────────────────────────────────────────────────────
 
 SCRIPT_DIR = Path(__file__).parent.resolve()
@@ -453,6 +510,14 @@ def install_tool(tool: dict, skills: list[str], base: Path, dry: bool) -> tuple[
             if action in ("created", "updated"):
                 updated += 1
 
+    # Inject the full plugin context (posture, tools, tech recommendations)
+    # into the tool's GLOBAL context file — every agent gets ALL changes.
+    gctx = tool.get("global_context")
+    if gctx:
+        action, detail = inject_plugin_context(gctx, dry, tool.get("global_context_prefix", ""))
+        if action in ("created", "updated"):
+            updated += 1
+
     return created, updated, errors
 
 def uninstall_tool(tool: dict, skills: list[str], base: Path, dry: bool) -> tuple[int, list[str]]:
@@ -489,6 +554,13 @@ def uninstall_tool(tool: dict, skills: list[str], base: Path, dry: bool) -> tupl
     ctx_dest = managed_context_path(tool, base)
     if ctx_dest and ctx_dest.exists():
         ok, _ = remove_hook_fallback_block(ctx_dest, dry)
+        if ok:
+            removed += 1
+
+    # Remove plugin context block from global context file
+    gctx = tool.get("global_context")
+    if gctx and gctx.exists():
+        ok, _ = remove_plugin_context(gctx, dry)
         if ok:
             removed += 1
 
