@@ -38,7 +38,15 @@ Definitions:
   `task-do` — even if the user said "do it".
 - When the task file records an environment, write it explicitly:
   `**Environment**: dev | beta | prod`.
-- If the environment is unclear, ASK. Do not guess.
+- **Direct task = dev by default**: when the user asks for a task without
+  specifying an environment, assume **dev**. Work in a branch (`feat/*`),
+  commit the changes, and report — the user reviews later. Do NOT ask
+  "which environment?" for normal tasks.
+- **ASK only when there is real impact risk**: stop and ask whenever the task
+  could affect a non-dev environment — beta/staging, prod (`main`/`master`,
+  prod URLs, `.env.prod`), shared state, real users, or anything whose impact
+  goes beyond the dev branch. If impact risk is unclear, surface it in one
+  line and continue with the dev assumption.
 
 ### Available Tools — Use Them by Default
 
